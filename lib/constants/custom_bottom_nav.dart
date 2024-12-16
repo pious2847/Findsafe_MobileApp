@@ -20,7 +20,8 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
     const Home(),
     const LocationHistory(),
     Container(), // Placeholder
-    const Center(child: Text('User Profile'),),
+    const Center(child: Text('Profile Page'),),
+    const Center(child: Text('Settings Page'),),
   ];
 
   @override
@@ -84,12 +85,6 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
                     icon: Iconsax.location,
                     label: 'Location',
                   ),
-                   _buildNavigationItem(
-                    index: 3,
-                    icon: Iconsax.user_octagon,
-                    label: '',
-                  ),
-                  
                   _buildMenuNavigationItem(index: 2, key: _menuKey),
                 ],
               ),
@@ -186,7 +181,7 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
     // 56 for height , 32 for the padding
 
     final double top =
-        position.dy - (140); // the height of the menu + a bit of padding
+        position.dy - (168); // the height of the menu + a bit of padding
     final double left = position.dx - (70); // shifts the menu to the left
     return Positioned(
         top: top,
@@ -200,24 +195,34 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
                   boxShadow: const [
                     BoxShadow(
                       color: Colors.black26, // Shadow color
-                      blurRadius: 8, // How blurry the shadow is
-                      spreadRadius: 2, // How much the shadow expands (optional)
+                      blurRadius: 4, 
+                      spreadRadius: 1, 
                       offset: Offset(2, 2), // Offset from the box: (x,y)
                     ),
                   ]),
               width: 140,
-              height: 120,
+              height: 150,
               child: ListView(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 children: <Widget>[
-                  
+                  ListTile(
+                    leading: const Icon(Iconsax.user_octagon),
+                    title: const Text('Profile'),
+                    onTap: () {
+                      _onItemTapped(3);
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //     const SnackBar(content: Text('Profile')));
+                      _toggleMenu();
+                    },
+                  ),
                   ListTile(
                     leading: const Icon(Iconsax.setting),
                     title: const Text('Settings'),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('settings')));
+                      _onItemTapped(4);
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //     const SnackBar(content: Text('settings')));
                       _toggleMenu();
                     },
                   ),
