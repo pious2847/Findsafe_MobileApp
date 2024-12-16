@@ -1,4 +1,5 @@
 import 'package:findsafe/screens/home.dart';
+import 'package:findsafe/screens/location.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:flutter/material.dart';
 
@@ -17,8 +18,9 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
 
   List<Widget> pages = [
     const Home(),
-    const Center(child: Text("Location Page")),
+    const LocationHistory(),
     Container(), // Placeholder
+    const Center(child: Text('User Profile'),),
   ];
 
   @override
@@ -82,6 +84,12 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
                     icon: Iconsax.location,
                     label: 'Location',
                   ),
+                   _buildNavigationItem(
+                    index: 3,
+                    icon: Iconsax.user_octagon,
+                    label: '',
+                  ),
+                  
                   _buildMenuNavigationItem(index: 2, key: _menuKey),
                 ],
               ),
@@ -162,6 +170,7 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
           child: Icon(
             Iconsax.category,
             color: Colors.white,
+            size: 20,
           ),
         ),
       ),
@@ -177,7 +186,7 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
     // 56 for height , 32 for the padding
 
     final double top =
-        position.dy - (168); // the height of the menu + a bit of padding
+        position.dy - (140); // the height of the menu + a bit of padding
     final double left = position.dx - (70); // shifts the menu to the left
     return Positioned(
         top: top,
@@ -197,22 +206,14 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
                     ),
                   ]),
               width: 140,
-              height: 150,
+              height: 120,
               child: ListView(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 children: <Widget>[
+                  
                   ListTile(
-                    leading: const Icon(Iconsax.user_octagon),
-                    title: const Text('Profile'),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Profile')));
-                      _toggleMenu();
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Iconsax.settings),
+                    leading: const Icon(Iconsax.setting),
                     title: const Text('Settings'),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -221,7 +222,7 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Iconsax.logout),
+                    leading: const Icon(Iconsax.logout_1),
                     title: const Text('Logout'),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
