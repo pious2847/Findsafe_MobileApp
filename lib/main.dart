@@ -1,4 +1,4 @@
-import 'package:findsafe/constants/custom_bottom_nav.dart';
+import 'package:findsafe/screens/splashscreen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: CustomBottomNav(),
+      home: SplashScreen(),
     );
   }
 }

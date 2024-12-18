@@ -13,6 +13,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool _isDraggableOpen = false;
+  late GoogleMapController _googleMapController;
 
   final CameraPosition initialCameraPosition = const CameraPosition(
     target: LatLng(37.77483, -122.41942), // Example coordinates (San Francisco)
@@ -27,35 +28,48 @@ class _HomeState extends State<Home> {
   }
 
   @override
+  void dispose() {
+    _googleMapController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        GoogleMap(
-          initialCameraPosition: initialCameraPosition,
-          mapType: MapType.normal,
-          myLocationEnabled: true,
-          myLocationButtonEnabled: true,
-        ),
+    return Scaffold(
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: initialCameraPosition,
+            myLocationEnabled: true,
+            mapType: MapType.hybrid,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            onMapCreated: (controller) => _googleMapController = controller,
+          ),
 
-        // Conditionally display the DeviceDraggableSheet
-        if (_isDraggableOpen) const DeviceDraggableSheet(),
+          // Conditionally display the DeviceDraggableSheet
+          if (_isDraggableOpen)
+            const AbsorbPointer(
+              absorbing: false, // Allow touches to pass through
+              child: DeviceDraggableSheet(),
+            ),
 
-        
-        Positioned(
+          Positioned(
             bottom: 100,
-            right: 25,
+            right: 18,
             child: Column(
               children: [
-               if(!_isDraggableOpen) Custom_Elevated_Buttons(
-                  icon: Iconsax.gps,
-                  onTap: () {
-                    // Add any functionality here
-                  },
-                ),
+                if (!_isDraggableOpen)
+                  Custom_Icon_Buttons(
+                    icon: Iconsax.gps,
+                    onTap: () {
+                      // Add any functionality here
+                    },
+                  ),
                 const SizedBox(
                   height: 30,
                 ),
-                Custom_Elevated_Buttons(
+                Custom_Icon_Buttons(
                   // Change the icon dynamically based on _isDraggableOpen
                   icon: _isDraggableOpen
                       ? Iconsax.arrow_square_down
@@ -63,8 +77,10 @@ class _HomeState extends State<Home> {
                   onTap: _toggleDraggableSheet,
                 ),
               ],
-            ))
-      ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

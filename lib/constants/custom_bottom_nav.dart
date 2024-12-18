@@ -20,8 +20,12 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
     const Home(),
     const LocationHistory(),
     Container(), // Placeholder
-    const Center(child: Text('Profile Page'),),
-    const Center(child: Text('Settings Page'),),
+    const Center(
+      child: Text('Profile Page'),
+    ),
+    const Center(
+      child: Text('Settings Page'),
+    ),
   ];
 
   @override
@@ -62,6 +66,7 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
           PageView(
             controller: _pageController,
             onPageChanged: _onPageChanged,
+            physics: const NeverScrollableScrollPhysics(),
             children: pages,
           ),
           Align(
@@ -181,8 +186,8 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
     // 56 for height , 32 for the padding
 
     final double top =
-        position.dy - (168); // the height of the menu + a bit of padding
-    final double left = position.dx - (70); // shifts the menu to the left
+        position.dy - (178); // the height of the menu + a bit of padding
+    final double left = position.dx - (95); // shifts the menu to the left
     return Positioned(
         top: top,
         left: left,
@@ -195,13 +200,13 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
                   boxShadow: const [
                     BoxShadow(
                       color: Colors.black26, // Shadow color
-                      blurRadius: 4, 
-                      spreadRadius: 1, 
+                      blurRadius: 4,
+                      spreadRadius: 1,
                       offset: Offset(2, 2), // Offset from the box: (x,y)
                     ),
                   ]),
-              width: 140,
-              height: 150,
+              width: 160,
+              height: 170,
               child: ListView(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
