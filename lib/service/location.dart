@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:findsafe/models/location_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:findsafe/.env.dart';
@@ -46,12 +47,11 @@ Future<LatLng?> fetchLatestLocation(String deviceId) async {
   }
 }
 
-  Future<List<dynamic>> fetchLocationHistory() async {
+  Future<List<Location>> fetchLocationHistory(String deviceId) async {
     final dio = Dio();
 
     try {
-      final deviceData = await SharedPreferences.getInstance();
-      final deviceId = deviceData.getString('deviceId');
+      
       final response =
           await dio.get('$APIURL/mobiledevices/$deviceId/locations');
       print('Resloc: $response');
