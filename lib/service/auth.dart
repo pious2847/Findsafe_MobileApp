@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider {
   final dio = Dio();
+  final deviceApiService = DeviceApiService();
 
   Future<void> signUp(BuildContext context, User user) async {
     try {
@@ -101,7 +102,8 @@ class AuthProvider {
         final isRegisted = prefs.getBool('isRegisted') ?? false;
 
         if (!isRegisted) {
-          await addDeviceInfo(
+          await deviceApiService.addDeviceInfo(
+            context,
             response.data['userId'],
             deviceName,
             deviceModel,
@@ -118,7 +120,7 @@ class AuthProvider {
             type: ToastType.success,
             position: ToastPosition.top);
 
-      Get.to(const CustomBottomNav()); // Redirect to Signin page
+      Get.to(const CustomBottomNav()); 
 
       } else if (response.statusCode == 400) {
         //Check for specific 400 error
@@ -143,7 +145,7 @@ class AuthProvider {
       }
     } catch (e) {
       // Network or other errors
-      print("Error during signup: $e");
+      print("Error during login: $e");
        CustomToast.show(
             context: context,
             message: 'Login failed. Please check your internet connection and try again.',

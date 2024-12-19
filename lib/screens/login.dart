@@ -29,8 +29,7 @@ class _SigninState extends State<Signin> {
       _isLoading = true; // Set loading state to true
     });
 
-  await _authProvider.logIn(context, user);
-
+    await _authProvider.logIn(context, user);
 
     // Handle error, show toast or snackbar
     setState(() {
@@ -112,9 +111,7 @@ class _SigninState extends State<Signin> {
                             prefixIcon: const Icon(Iconsax.lock),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscureText
-                                    ? Iconsax.eye
-                                    : Iconsax.eye,
+                                _obscureText ? Iconsax.eye : Iconsax.eye,
                               ),
                               onPressed: () {
                                 setState(() {

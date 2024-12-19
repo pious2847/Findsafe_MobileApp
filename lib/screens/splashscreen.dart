@@ -17,24 +17,28 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    authenticatePage();
+    
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
-    )..repeat();
+    );
 
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(parent: _animationController, curve: Curves.easeIn));
-    authenticatePage();
-
+    // Run animation only once instead of repeating
+    _animationController.forward();
+    // Navigation delay
     Future.delayed(const Duration(seconds: 3), () async {
+      if (!mounted) return; // Add mounted check
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
       bool showHome = prefs.getBool('showHome') ?? false;
+
+      if (!mounted) return; // Add mounted check before navigation
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -62,14 +66,17 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // In splashscreen.dart, within the build method
               Lottie.asset(
                 'assets/svg/loading.json',
                 width: 200,
                 height: 200,
                 animate: true,
                 controller: _animationController,
-                reverse: _animation.value > 0.5,
-                repeat: true,
+                repeat: false, // Don't repeat the animation
+                onLoaded: (composition) {
+                  _animationController.duration = composition.duration;
+                },
               ),
               const SizedBox(
                 height: 15,
@@ -98,21 +105,23 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Future<void> authenticatePage() async {
-    try {
-      final userData = await getUserDataFromLocalStorage();
-      final userId = userData['userId'];
-      final isLoggedIn = userData['isLoggedIn'];
-      if (userId != null && isLoggedIn) {
-        final prefs = await SharedPreferences.getInstance();
-        prefs.setBool('showHome', true);
-      } else {
-        final prefs = await SharedPreferences.getInstance();
-        prefs.setBool('showHome', false);
-      }
-    } catch (e) {
-      print("Error occurred: $e");
-      // Handle error, show toast or snackbar
+Future<void> authenticatePage() async {
+  try {
+    if (!mounted) return;
+    
+    final userData = await getUserDataFromLocalStorage();
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+
+    if (userData['userId'] != null && userData['isLoggedIn'] == true) {
+      await prefs.setBool('showHome', true);
+    } else {
+      await prefs.setBool('showHome', false);
     }
+  } catch (e) {
+    debugPrint("Authentication error: $e");
   }
+}
 }

@@ -31,8 +31,8 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-                    <meta-data android:name="com.google.android.geo.API_KEY"
-               android:value="AIzaSyBBrpmg3XACkHWNWpqDmXGHmV5f2brFXYY"/>
+    <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyBNCxYyzhLrhW_PxHO5fJpiVtsOkcJl89M"/>
         <service
         android:name="com.dexterous.flutterlocalnotifications.ForegroundService"        
         android:exported="false"
