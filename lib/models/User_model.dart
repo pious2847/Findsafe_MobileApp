@@ -29,25 +29,23 @@ class UserProfileModel {
     required this.password,
     this.devices,
   });
-
 factory UserProfileModel.fromJson(Map<String, dynamic> json) {
-  final userJson = json['User'];
   return UserProfileModel(
-    id: userJson['_id'],
-    username: userJson['name'],
-    phone: userJson['phone'],
-    email: userJson['email'],
-    addressInfo: userJson['addressinfo'] != null
-        ? Address.fromJson(userJson['addressinfo'])
+    id: json['_id'],
+    username: json['name'] ?? '',
+    phone: json['phone'],
+    email: json['email'] ?? '',
+    addressInfo: json['addressinfo'] != null
+        ? Address.fromJson(json['addressinfo'])
         : null,
-    emergencyContact: userJson['emergencycontact'] != null
-        ? EmergencyContact.fromJson(userJson['emergencycontact'])
+    emergencyContact: json['emergencycontact'] != null
+        ? EmergencyContact.fromJson(json['emergencycontact'])
         : null,
-    verified: userJson['verified'],
-    password: userJson['password'],
-    devices: userJson['devices'] != null
-        ? List<String>.from(userJson['devices'].map((x) => x.toString()))
-        : null,
+    verified: json['verified'] ?? false,
+    password: json['password'] ?? '',
+    devices: json['devices'] != null
+        ? List<String>.from(json['devices'].map((x) => x.toString()))
+        : [],
   );
 }
 

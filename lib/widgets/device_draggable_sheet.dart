@@ -126,7 +126,7 @@ class _DeviceDraggableSheetState extends State<DeviceDraggableSheet> {
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
-      minChildSize: 0.1,
+      minChildSize: 0.3,
       maxChildSize: 0.9,
       builder: (context, scrollController) {
         return Container(
@@ -145,45 +145,47 @@ class _DeviceDraggableSheetState extends State<DeviceDraggableSheet> {
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Drag handle
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  width: 40,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(5),
+          child: SizedBox(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(5),
+                    ),
                   ),
                 ),
-              ),
-
-              // Title
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  "Devices",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            
+                // Title
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    "Devices",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 10),
-
-              // Content
-              Expanded(
-                child: isLoading
-                    ? _buildLoadingState()
-                    : _buildDevicesList(scrollController),
-              ),
-
-              const SizedBox(height: 90),
-            ],
+            
+                const SizedBox(height: 10),
+            
+                // Content
+                Expanded(
+                  child: isLoading
+                      ? _buildLoadingState()
+                      : _buildDevicesList(scrollController),
+                ),
+            
+                const SizedBox(height: 90),
+              ],
+            ),
           ),
         );
       },

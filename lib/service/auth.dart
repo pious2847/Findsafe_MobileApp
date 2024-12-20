@@ -140,12 +140,9 @@ class AuthProvider {
             type: ToastType.error,
             position: ToastPosition.top);
        
-        print(
-            "Login failed with status ${response.statusCode}: ${response.data}");
       }
     } catch (e) {
       // Network or other errors
-      print("Error during login: $e");
        CustomToast.show(
             context: context,
             message: 'Login failed. Please check your internet connection and try again.',
@@ -153,4 +150,95 @@ class AuthProvider {
             position: ToastPosition.top);
     }
   }
+
+Future<void> updateUser(BuildContext context,  user)async {
+  try {
+     final userData = await getUserDataFromLocalStorage();
+    final userId = userData['userId'] as String?;
+
+    print('User data for user update: $user.');
+
+    // final url = '$APIURL/update/$userId';
+    final dio = Dio();
+    final response = await dio.put(
+      '$APIURL/update/$userId',
+      options: Options(
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      ),
+      data: user
+    );
+
+    if (response.statusCode == 200) {
+      final responseMsg = response.data['message'];
+      CustomToast.show(
+        context: context,
+        message: responseMsg,
+        type: ToastType.success,
+        position: ToastPosition.top,);
+    }else{
+      const responseMsg = "Unknown error Occured";
+      CustomToast.show(
+        context: context,
+        message: responseMsg,
+        type: ToastType.error,
+        position: ToastPosition.top,);
+    }
+  } catch (e) {
+     CustomToast.show(
+        context: context,
+        message: 'Failed to update user profile ',
+        type: ToastType.error,
+        position: ToastPosition.top,);
+  }
+
+}
+
+Future<dynamic> fetchUser(BuildContext context) async {
+  try {
+    // Get user data from local storage
+    final userData = await getUserDataFromLocalStorage();
+    final userId = userData['userId'];
+
+    if (userId == null) {
+      throw Exception('User ID is not available in local storage.');
+    }
+
+    final dio = Dio();
+    final url = '$APIURL/get-user/$userId';
+
+    // Send GET request to fetch user data
+    final response = await dio.get(
+      url,
+      options: Options(
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      ),
+    );
+
+    // Check if the response is successful
+    if (response.statusCode == 200) {
+      print("Success Retrieve User data: ${response.data['User']}");
+
+      final userJson = response.data['User']; // Access the 'User' key
+      var user = UserProfileModel.fromJson(userJson);
+      return user;
+    } else {
+      throw Exception('Failed to load user data');
+    }
+  } catch (e) {
+    // Handle errors
+    CustomToast.show(
+      context: context,
+      message: 'An Error Occurred while fetching user data',
+      type: ToastType.error,
+      position: ToastPosition.top,
+    );
+    print('An Error Occurred $e');
+    return null; // Return null if an error occurs
+  }
+}
+
 }

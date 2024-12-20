@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:findsafe/models/devices.dart';
 import 'package:findsafe/service/websocket.dart';
+import 'package:findsafe/utilities/toast_messages.dart';
+import 'package:findsafe/widgets/custom_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
 class DevicesCards extends StatefulWidget {
   final Device phone;
-  final Future<void> Function(String) onTap; 
+  final Future<void> Function(String) onTap;
   final bool isActive;
 
   const DevicesCards({
@@ -56,6 +58,18 @@ class _DevicesCardsState extends State<DevicesCards> {
     }
   }
 
+  Future<void> handleAlarmTrigger() async {
+    if (widget.phone.id.isNotEmpty) {
+      await _sendAlarmCommand(widget.phone.id);
+    } else {
+      CustomToast.show(
+        context: context,
+        message: 'Failed to send alarm',
+        type: ToastType.error,
+        position: ToastPosition.top);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
@@ -92,46 +106,14 @@ class _DevicesCardsState extends State<DevicesCards> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                TextButton.icon(
-                  icon: const Icon(Iconsax.music_play),
-                  onPressed: () async {
-                    if (widget.phone.id.isNotEmpty) {
-                      await _sendAlarmCommand(widget.phone.id);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Failed to send alarm')),
-                      );
-                    }
-                  },
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 20,
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  label: const Text('Play Alarm'),
-                ),
-                TextButton.icon(
-                  icon: const Icon(Iconsax.security_safe),
-                  onPressed: () async {
-                    // Implement secure device logic here
-                  },
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 20,
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  label: const Text('Secure Device'),
-                ),
+                CustomTextButton(
+                    icon: Iconsax.music_play,
+                    onTap: handleAlarmTrigger,
+                    label: 'Play Alarm'),
+                CustomTextButton(
+                    icon: Iconsax.security_safe,
+                    onTap: () {},
+                    label: 'Secure Device'),
                 TextButton.icon(
                   icon: const Icon(Iconsax.map),
                   onPressed: () => widget.onTap(widget.phone.id),

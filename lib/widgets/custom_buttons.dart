@@ -35,3 +35,36 @@ class Custom_Icon_Buttons extends StatelessWidget {
     );
   }
 }
+
+class CustomTextButton extends StatelessWidget {
+  final IconData icon;
+  final Function onTap;
+  final String label;
+
+  const CustomTextButton({
+    super.key,
+    required this.icon,
+    required this.onTap,
+    required this.label,
+  });
+
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      icon: Icon(icon),
+      onPressed: () => onTap(),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(
+          vertical: 10,
+          horizontal: 20,
+        ),
+        textStyle: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      label:  Text(label),
+    );
+  }
+}

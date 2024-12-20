@@ -186,12 +186,9 @@ class _HomeState extends State<Home> {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
             onMapCreated: (controller) => _googleMapController = controller,
-
             markers: _markers,
             polylines: _polylines,
-            // liteModeEnabled: Platform.isAndroid, // Add this
-            compassEnabled: false, // Add this
-            // tiltGesturesEnabled: false, // Add this if you don't need tilt
+            compassEnabled: true, // Add this
           ),
 
           // Conditionally display the DeviceDraggableSheet
