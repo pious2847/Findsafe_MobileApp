@@ -5,6 +5,7 @@ import 'package:findsafe/service/location.dart';
 import 'package:findsafe/utilities/georeverse.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
 import 'package:findsafe/utilities/utils.dart';
+import 'package:findsafe/widgets/location_history_table.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -50,9 +51,13 @@ class _LocationHistoryState extends State<LocationHistory> {
 
       setState(() {
         devices = mobileDevices;
+        selectedDevice = devices.isNotEmpty ? devices.first : null;
+        if (selectedDevice != null) {
+          fetchLocationHistory(selectedDevice!);
+        }
         isLoading = false;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (!mounted) return;
 
       setState(() {
@@ -61,28 +66,29 @@ class _LocationHistoryState extends State<LocationHistory> {
 
       CustomToast.show(
         context: context,
-        message: 'Error fetching mobile devices',
+        message: 'An error occurred: ${e.toString()}',
         type: ToastType.error,
         position: ToastPosition.top,
       );
-      print('Error fetching mobile devices: $e');
+      debugPrint('Error fetching mobile devices: $e\n$stackTrace');
     }
   }
 
   fetchLocationHistory(Device device) async {
     try {
       final history = await locationApiService.fetchLocationHistory(device.id);
+
       setState(() {
         locationHistory = history;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
       CustomToast.show(
         context: context,
         message: 'Failed to fetch location history',
         type: ToastType.error,
         position: ToastPosition.top,
       );
-      print('Failed to fetch location history: $e');
+      debugPrint('Error fetching location history: $e\n$stackTrace');
     }
   }
 
@@ -97,7 +103,7 @@ class _LocationHistoryState extends State<LocationHistory> {
     return SafeArea(
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -112,10 +118,12 @@ class _LocationHistoryState extends State<LocationHistory> {
                 DropdownButtonFormField<Device>(
                   value: selectedDevice,
                   onChanged: (Device? newValue) {
-                    setState(() {
-                      selectedDevice = newValue!;
-                      fetchLocationHistory(selectedDevice!);
-                    });
+                    if (newValue != null) {
+                      setState(() {
+                        selectedDevice = newValue;
+                        fetchLocationHistory(selectedDevice!);
+                      });
+                    }
                   },
                   items: devices.map<DropdownMenuItem<Device>>((Device device) {
                     return DropdownMenuItem<Device>(
@@ -145,132 +153,39 @@ class _LocationHistoryState extends State<LocationHistory> {
               else
                 Center(
                   child: Lottie.asset(
-                    'assets/svg/dataloader.json', // Make sure to add your Lottie file here
+                    'assets/svg/dataloader.json',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.error,
+                          size: 50, color: Colors.red);
+                    },
+                  ),
+                ),
+              const SizedBox(
+                height: 20,
+              ),
+              if (locationHistory.isNotEmpty)
+                LocationHistoryTable(
+                    locationHistory: locationHistory,
+                    getPlaceName: getPlaceName)
+              else if (selectedDevice != null)
+                Center(
+                  child: Lottie.asset(
+                    'assets/svg/circleloading.json', // Make sure to add your Lottie file here
                     width: 200,
                     height: 200,
                     fit: BoxFit.contain,
                   ),
                 ),
-              SizedBox(
-                height: 20,
-              ),
-              if (locationHistory.isNotEmpty)
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(
-                        16.0), // Add padding around the list
-                    children: [
-                      DataTable(
-                        columns: const <DataColumn>[
-                          DataColumn(
-                            label: Text(
-                              'Location',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize:
-                                    18, // Adjust font size for column headers
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              'Timestamp',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                        ],
-                        rows: locationHistory.map((location) {
-                          return DataRow(
-                            cells: [
-                              DataCell(
-                                FutureBuilder<String>(
-                                  future: getPlaceName(
-                                    location.latitude,
-                                    location.longitude,
-                                  ),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const SizedBox(
-                                        height: 24,
-                                        width: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      );
-                                    } else if (snapshot.hasError) {
-                                      return Text(
-                                        'Error: ${snapshot.error}',
-                                        style: const TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 14,
-                                        ),
-                                      );
-                                    } else {
-                                      final locationName =
-                                          snapshot.data ?? 'Unknown location';
-                                      return Text(
-                                        locationName,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.black87,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  location.timestamp.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.blueGrey,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                        dataRowHeight: 60, // Adjust the row height
-                        headingRowHeight: 55, // Adjust the heading row height
-                        dividerThickness: 1.5, // Adjust the divider thickness
-                        headingTextStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18, // Adjust heading font size
-                          color: Colors.white,
-                        ),
-                        headingRowColor: WidgetStateColor.resolveWith(
-                          (states) => Colors.indigo, // Adjust heading row color
-                        ),
-                        dataTextStyle: const TextStyle(
-                          fontSize: 16, // Adjust data text size
-                          color: Colors.black87,
-                        ),
-                        columnSpacing: 24, // Add spacing between columns
-                      ),
-                    ],
-                  ),
-                )
-              else if (selectedDevice != null)
-                const Center(
-                  child: CircularProgressIndicator(),
-                )
-              else
+              if (devices.isEmpty)
                 const Center(
                   child: Text(
-                    'No location history available',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    'No devices found. Please add a device.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
-                ),
+                )
             ],
           ),
         ),

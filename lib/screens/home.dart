@@ -235,6 +235,7 @@ class _HomeState extends State<Home> {
                       _getLocation();
                     },
                   ),
+                  if(!_isDraggableOpen)
                 const SizedBox(
                   height: 30,
                 ),

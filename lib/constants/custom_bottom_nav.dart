@@ -1,5 +1,6 @@
 import 'package:findsafe/screens/home.dart';
 import 'package:findsafe/screens/location.dart';
+import 'package:findsafe/screens/profile.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:flutter/material.dart';
 
@@ -20,9 +21,7 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
     const Home(),
     const LocationHistory(),
     Container(), // Placeholder
-    const Center(
-      child: Text('Profile Page'),
-    ),
+   const ProfilePage(),
     const Center(
       child: Text('Settings Page'),
     ),
