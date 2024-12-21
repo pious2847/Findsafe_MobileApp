@@ -5,7 +5,7 @@ class LocationHistoryTable extends StatelessWidget {
   final List<Location> locationHistory;
   final Future<String> Function(double, double) getPlaceName;
 
-  LocationHistoryTable({
+  const LocationHistoryTable({super.key, 
     required this.locationHistory,
     required this.getPlaceName,
   });
@@ -28,11 +28,11 @@ class LocationHistoryTable extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
-              headingRowColor: MaterialStateProperty.resolveWith(
+              headingRowColor: WidgetStateProperty.resolveWith(
                 (states) => Colors.blueAccent,
               ),
-              dataRowColor: MaterialStateProperty.resolveWith(
-                (states) => states.contains(MaterialState.selected)
+              dataRowColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.selected)
                     ? Colors.blue[50]
                     : Colors.white,
               ),

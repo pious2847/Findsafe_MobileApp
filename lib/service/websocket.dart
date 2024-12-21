@@ -66,7 +66,7 @@ class WebSocketService {
     if (_reconnectTimer != null) {
       _reconnectTimer!.cancel();
     }
-    _reconnectTimer = Timer(Duration(seconds: 10), () {
+    _reconnectTimer = Timer(const Duration(seconds: 10), () {
       print('Reconnecting...');
       connect();
     });

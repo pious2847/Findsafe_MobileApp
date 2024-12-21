@@ -1,9 +1,7 @@
-import 'package:findsafe/constants/custom_bottom_nav.dart';
 import 'package:findsafe/models/User_model.dart';
 import 'package:findsafe/screens/signup.dart';
 import 'package:findsafe/service/auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';

@@ -1,12 +1,7 @@
-import 'dart:io';
-
-import 'package:findsafe/models/devices.dart';
 import 'package:findsafe/models/directions_model.dart';
-import 'package:findsafe/service/device.dart';
 import 'package:findsafe/service/location.dart';
 import 'package:findsafe/utilities/directions.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
-import 'package:findsafe/utilities/utils.dart';
 import 'package:findsafe/widgets/custom_buttons.dart';
 import 'package:findsafe/widgets/device_draggable_sheet.dart';
 import 'package:flutter/material.dart';
@@ -178,6 +173,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
+      alignment: Alignment.center,
         children: [
           GoogleMap(
             initialCameraPosition: initialCameraPosition,
@@ -190,6 +186,35 @@ class _HomeState extends State<Home> {
             polylines: _polylines,
             compassEnabled: true, // Add this
           ),
+          if (_info != null)
+            Positioned(
+              top: 40.0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 6.0,
+                  horizontal: 12.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(20.0),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      offset: Offset(0, 2),
+                      blurRadius: 6.0,
+                    )
+                  ],
+                ),
+                child: Text(
+                  '${_info?.totalDistance}, ${_info?.totalDuration}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
 
           // Conditionally display the DeviceDraggableSheet
           if (_isDraggableOpen)
@@ -232,10 +257,10 @@ class _HomeState extends State<Home> {
                       _getLocation();
                     },
                   ),
-                  if(!_isDraggableOpen)
-                const SizedBox(
-                  height: 30,
-                ),
+                if (!_isDraggableOpen)
+                  const SizedBox(
+                    height: 30,
+                  ),
                 Custom_Icon_Buttons(
                   icon: _isDraggableOpen
                       ? Iconsax.arrow_square_down

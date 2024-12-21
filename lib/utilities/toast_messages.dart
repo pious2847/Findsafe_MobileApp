@@ -37,10 +37,10 @@ class CustomToast {
         iconData = Icons.warning_amber_outlined;
         break;
       case ToastType.info:
-      default:
         backgroundColor = Colors.blue[600]!;
         textColor = Colors.white;
         iconData = Icons.info_outline;
+        break;
     }
 
     // Create the overlay entry
