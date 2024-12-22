@@ -54,18 +54,28 @@ class LocationApiService {
       'longitude': '${currentlocation.longitude}'
     };
     try {
-      final response = await dio.post(apiUrl, data: data);
-
-      if (response.statusCode == 200 && response.data.isNotEmpty) {
-        print(
-            '============================================= Registed Currect Location completed ============================');
-      } else {
-        print('Failed to adding  location: $response');
-      }
+      await dio.post(apiUrl, data: data);
     } catch (e) {
       print('Failed to adding  location: $e');
       return null;
     }
     return null;
+  }
+
+  Future<void> updateLocation(String deviceId, Position position) async {
+    final dio = Dio();
+    const url = '$APIURL/update-location';
+    final data = {
+      'deviceId': deviceId,
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+    };
+
+    try {
+      final response = await dio.post(url, data: data);
+      print('Schedule task executed Response = $response');
+    } catch (e) {
+      print('Error updating location: $e');
+    }
   }
 }

@@ -10,7 +10,6 @@ class WebSocketService {
   final _AlarmService = AlarmService();
   Timer? _reconnectTimer;
 
-  
   Future<void> connect() async {
     final deviceData = await SharedPreferences.getInstance();
     final deviceId = deviceData.getString('deviceId');
@@ -36,29 +35,21 @@ class WebSocketService {
 
   void _handleMessage(dynamic message, String? deviceId) {
     try {
-      final String stringMessage = String.fromCharCodes(message);
-      print('Received $stringMessage');
+      final decodedMessage = utf8.decode(message);
+      final data = jsonDecode(decodedMessage);
 
-      final data = jsonDecode(stringMessage);
-      print('Received data:  $data');
-      final String command = data['command'];
-      final String targetDeviceId = data['deviceId'];
-      print('Current Device Id : $deviceId,    Target Device Id $targetDeviceId');
-      if (targetDeviceId == deviceId) {
-        print('Received command:  $data');
-        switch (command) {
+      print('Received command: $data');
+      if (data['deviceId'] == deviceId) {
+        switch (data['command']) {
           case 'play_alarm':
             _AlarmService.playAlarm();
             break;
-          case 'other_command':
-            print('unknown command');
-            break;
           default:
-            print('Unknown command: $command');
+            print('Unknown command: ${data['command']}');
         }
       }
     } catch (e) {
-      print('Error decoding or handling message: $e');
+      print('Error in message handling: $e');
     }
   }
 

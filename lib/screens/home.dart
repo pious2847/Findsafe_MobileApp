@@ -185,6 +185,7 @@ class _HomeState extends State<Home> {
             markers: _markers,
             polylines: _polylines,
             compassEnabled: true, // Add this
+            cloudMapId: '',
           ),
           if (_info != null)
             Positioned(

@@ -52,8 +52,8 @@ class AlarmService {
     );
     flutterLocalNotificationsPlugin.show(
       0,
-      'Alarm',
-      'This is an alarm notification',
+      'FindSafe Alert',
+      'An alarm has been triggered on your device for easy tracking',
       platformChannelSpecifics,
       payload: 'alarm',
     );
