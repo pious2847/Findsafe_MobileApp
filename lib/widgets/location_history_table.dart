@@ -1,18 +1,22 @@
 import 'package:findsafe/models/location_model.dart';
+import 'package:findsafe/widgets/custom_map_preview.dart';
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 
 class LocationHistoryTable extends StatelessWidget {
   final List<Location> locationHistory;
   final Future<String> Function(double, double) getPlaceName;
 
-  const LocationHistoryTable({super.key, 
+  const LocationHistoryTable({
+    super.key,
     required this.locationHistory,
     required this.getPlaceName,
   });
 
+ 
   @override
   Widget build(BuildContext context) {
-    final deviceWidth = MediaQuery.of(context).size.width * 0.91;
+    final deviceWidth = MediaQuery.of(context).size.width * 0.95;
 
     return SizedBox(
       height: MediaQuery.of(context).size.height,
@@ -50,6 +54,12 @@ class LocationHistoryTable extends StatelessWidget {
                 DataColumn(
                   label: Text(
                     'Timestamp',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'Action',
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -105,6 +115,18 @@ class LocationHistoryTable extends StatelessWidget {
                         ),
                       ),
                     ),
+                    DataCell(IconButton(
+                      icon: const Icon(Iconsax.eye),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => LocationPreview(
+                            latitude: location.latitude, 
+                            longitude:location.longitude, 
+                          ),
+                        );
+                      },
+                    )),
                   ],
                 );
               }).toList(),

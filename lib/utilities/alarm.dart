@@ -104,8 +104,8 @@ class AlarmService {
 
     await flutterLocalNotificationsPlugin.show(
       0,
-      'Security Alert',
-      'Your device has been put in lost mode.',
+      'FindSafe Security Alert',
+      'Your device has been placed in Lost Mode for safety',
       platformChannelSpecifics,
       payload: 'lost_mode_notification',
     );

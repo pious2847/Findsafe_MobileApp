@@ -47,26 +47,23 @@ class _DevicesCardsState extends State<DevicesCards> {
       });
       _webSocketService.sendCommand(command);
       // await _ApiServics.sendAlarmCommand(deviceId);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Alarm command sent successfully')),
-      );
+      CustomToast.show(
+          context: context,
+          message: 'Alarm command sent successfully',
+          type: ToastType.success,
+          position: ToastPosition.top);
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $error')),
-      );
+      CustomToast.show(
+          context: context,
+          message: 'Failed to send alarm',
+          type: ToastType.error,
+          position: ToastPosition.top);
     }
   }
 
   Future<void> handleAlarmTrigger() async {
     if (widget.phone.id.isNotEmpty) {
       await _sendAlarmCommand(widget.phone.id);
-    } else {
-      CustomToast.show(
-        context: context,
-        message: 'Failed to send alarm',
-        type: ToastType.error,
-        position: ToastPosition.top);
     }
   }
 
@@ -108,7 +105,9 @@ class _DevicesCardsState extends State<DevicesCards> {
               children: [
                 CustomTextButton(
                     icon: Iconsax.music_play,
-                    onTap: handleAlarmTrigger,
+                    onTap: () {
+                      handleAlarmTrigger();
+                    },
                     label: 'Play Alarm'),
                 CustomTextButton(
                     icon: Iconsax.security_safe,
