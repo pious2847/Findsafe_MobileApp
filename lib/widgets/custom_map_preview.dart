@@ -5,8 +5,7 @@ class LocationPreview extends StatefulWidget {
   final double longitude;
   final double latitude;
 
-  LocationPreview({Key? key, required this.latitude, required this.longitude})
-      : super(key: key);
+  const LocationPreview({super.key, required this.latitude, required this.longitude});
 
   @override
   State<LocationPreview> createState() => _LocationPreviewState();
