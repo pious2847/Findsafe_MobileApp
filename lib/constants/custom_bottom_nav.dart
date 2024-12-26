@@ -18,13 +18,20 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
   bool _isMenuOpen = false;
   final GlobalKey _menuKey = GlobalKey(); // Add a GlobalKey
 
-  List<Widget> pages = [
-    const Home(),
-    const LocationHistory(),
-    Container(), // Placeholder
-   const ProfilePage(),
-    SettingsPage()
-  ];
+  late List<Widget> pages;
+
+  @override
+  void initState() {
+    super.initState();
+    pages = [
+      const Home(),
+      const LocationHistory(),
+      Container(), // Placeholder
+      const ProfilePage(),
+      SettingsPage(onPageChanged: (index) => _onItemTapped(index)),
+      const Center(child: Text('Security'),)
+    ];
+  }
 
   @override
   void dispose() {
@@ -32,7 +39,7 @@ class _CustomBottomNavState extends State<CustomBottomNav> {
     super.dispose();
   }
 
-  void _onItemTapped(int index) {
+  void  _onItemTapped(int index) {
     if (index == 2) {
       _toggleMenu();
       return;
