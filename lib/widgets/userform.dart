@@ -37,7 +37,6 @@ class _UserFormState extends State<UserForm> {
         await _authProvider.updateUser(context, user.toJson());
 
         if (!mounted) return;
-
       } catch (e) {
         if (!mounted) return;
       } finally {
@@ -173,14 +172,29 @@ class _UserFormState extends State<UserForm> {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
-                      initialValue: user.emergencyContact?.contact,
+                      initialValue: user.emergencyContact?.phone,
                       onChanged: (value) {
                         user.emergencyContact ??= EmergencyContact();
-                        user.emergencyContact!.contact = value;
+                        user.emergencyContact!.phone = value;
                       },
                       decoration: InputDecoration(
                         labelText: 'Emergency Contact Phone',
                         prefixIcon: const Icon(Iconsax.call),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      initialValue: user.emergencyContact?.relationship,
+                      onChanged: (value) {
+                        user.emergencyContact ??= EmergencyContact();
+                        user.emergencyContact!.relationship = value;
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Relationship',
+                        prefixIcon: const Icon(Iconsax.people),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -234,7 +248,9 @@ class _UserFormState extends State<UserForm> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 70,)
+                    const SizedBox(
+                      height: 70,
+                    )
                   ],
                 ),
               ),
