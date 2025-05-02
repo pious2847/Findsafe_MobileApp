@@ -1,3 +1,4 @@
+import 'package:findsafe/controllers/security_controller.dart';
 import 'package:findsafe/controllers/theme_controller.dart';
 import 'package:findsafe/screens/home.dart';
 import 'package:findsafe/screens/location.dart';
@@ -5,6 +6,7 @@ import 'package:findsafe/screens/profile.dart';
 import 'package:findsafe/screens/security.dart';
 import 'package:findsafe/screens/settings.dart';
 import 'package:findsafe/theme/app_theme.dart';
+import 'package:findsafe/widgets/auth_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -41,13 +43,21 @@ class _CustomBottomNavState extends State<CustomBottomNav>
     // Register this state with Get for navigation
     Get.put(this, tag: 'bottomNavState');
 
+    // Initialize security controller if needed
+    if (!Get.isRegistered<SecurityController>()) {
+      Get.put(SecurityController());
+    }
+
     pages = [
       const Home(),
       const LocationHistory(),
       Container(), // Placeholder
       const ProfilePage(),
       SettingsPage(onPageChanged: (index) => _onItemTapped(index)),
-      const SecurityScreen()
+      const AuthWrapper(
+        reason: 'Authentication required to access security settings',
+        child: SecurityScreen(),
+      ),
     ];
 
     // Initialize animation controller

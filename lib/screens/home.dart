@@ -1,4 +1,5 @@
 import 'package:findsafe/controllers/geofence_controller.dart';
+import 'package:findsafe/controllers/notification_controller.dart';
 import 'package:findsafe/models/directions_model.dart';
 import 'package:findsafe/service/location.dart';
 import 'package:findsafe/theme/app_theme.dart';
@@ -32,6 +33,7 @@ class _HomeState extends State<Home> {
   final Set<Polyline> _polylines = {};
   MapType _currentMapType = MapType.hybrid;
   late GeofenceController _geofenceController;
+  late NotificationController _notificationController;
   bool _showGeofences = false;
 
   final locationApiService = LocationApiService();
@@ -235,11 +237,16 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
 
-    // Initialize geofence controller
+    // Initialize controllers
     if (!Get.isRegistered<GeofenceController>()) {
       Get.put(GeofenceController());
     }
     _geofenceController = Get.find<GeofenceController>();
+
+    if (!Get.isRegistered<NotificationController>()) {
+      Get.put(NotificationController());
+    }
+    _notificationController = Get.find<NotificationController>();
 
     // Use WidgetsBinding to ensure initialization happens after frame
     WidgetsBinding.instance.addPostFrameCallback((_) {

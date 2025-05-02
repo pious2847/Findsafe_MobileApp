@@ -1,4 +1,6 @@
+import 'package:findsafe/controllers/biometric_controller.dart';
 import 'package:findsafe/controllers/security_controller.dart';
+import 'package:findsafe/screens/pin_auth.dart';
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
@@ -19,31 +21,39 @@ class SecurityScreen extends StatefulWidget {
 
 class _SecurityScreenState extends State<SecurityScreen> {
   late SecurityController _securityController;
-  
+  late BiometricController _biometricController;
+
   @override
   void initState() {
     super.initState();
-    
-    // Initialize controller if it doesn't exist
+
+    // Initialize controllers if they don't exist
     if (!Get.isRegistered<SecurityController>()) {
       Get.put(SecurityController());
     }
-    
     _securityController = Get.find<SecurityController>();
+
+    if (!Get.isRegistered<BiometricController>()) {
+      Get.put(BiometricController());
+    }
+    _biometricController = Get.find<BiometricController>();
   }
-  
+
   void _showPinSetupDialog() {
     final TextEditingController pinController = TextEditingController();
     final TextEditingController confirmPinController = TextEditingController();
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    
+
     showDialog(
       context: context,
       builder: (context) {
         final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-        final backgroundColor = isDarkMode ? AppTheme.darkCardColor : Colors.white;
-        final textColor = isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor;
-        
+        final backgroundColor =
+            isDarkMode ? AppTheme.darkCardColor : Colors.white;
+        final textColor = isDarkMode
+            ? AppTheme.darkTextPrimaryColor
+            : AppTheme.textPrimaryColor;
+
         return AlertDialog(
           backgroundColor: backgroundColor,
           title: Text(
@@ -111,7 +121,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
               child: Text(
                 'Cancel',
                 style: TextStyle(
-                  color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                  color: isDarkMode
+                      ? AppTheme.darkTextSecondaryColor
+                      : AppTheme.textSecondaryColor,
                 ),
               ),
             ),
@@ -121,7 +133,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   // Save PIN code
                   Navigator.of(context).pop();
                   _securityController.togglePinCode(true);
-                  
+
                   // Show success message
                   CustomToast.show(
                     context: context,
@@ -132,7 +144,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor,
+                backgroundColor: isDarkMode
+                    ? AppTheme.darkPrimaryColor
+                    : AppTheme.primaryColor,
                 foregroundColor: Colors.white,
               ),
               child: const Text('Save'),
@@ -142,17 +156,20 @@ class _SecurityScreenState extends State<SecurityScreen> {
       },
     );
   }
-  
+
   void _showRemoteLockDialog() {
     final TextEditingController deviceIdController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) {
         final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-        final backgroundColor = isDarkMode ? AppTheme.darkCardColor : Colors.white;
-        final textColor = isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor;
-        
+        final backgroundColor =
+            isDarkMode ? AppTheme.darkCardColor : Colors.white;
+        final textColor = isDarkMode
+            ? AppTheme.darkTextPrimaryColor
+            : AppTheme.textPrimaryColor;
+
         return AlertDialog(
           backgroundColor: backgroundColor,
           title: Text(
@@ -168,7 +185,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
               Text(
                 'Enter the device ID you want to lock remotely',
                 style: TextStyle(
-                  color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                  color: isDarkMode
+                      ? AppTheme.darkTextSecondaryColor
+                      : AppTheme.textSecondaryColor,
                 ),
               ),
               const SizedBox(height: 16),
@@ -189,14 +208,16 @@ class _SecurityScreenState extends State<SecurityScreen> {
               child: Text(
                 'Cancel',
                 style: TextStyle(
-                  color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                  color: isDarkMode
+                      ? AppTheme.darkTextSecondaryColor
+                      : AppTheme.textSecondaryColor,
                 ),
               ),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                
+
                 // Show success message
                 CustomToast.show(
                   context: context,
@@ -206,7 +227,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor,
+                backgroundColor: isDarkMode
+                    ? AppTheme.darkPrimaryColor
+                    : AppTheme.primaryColor,
                 foregroundColor: Colors.white,
               ),
               child: const Text('Lock Device'),
@@ -216,17 +239,20 @@ class _SecurityScreenState extends State<SecurityScreen> {
       },
     );
   }
-  
+
   void _showDataWipeDialog() {
     final TextEditingController deviceIdController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) {
         final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-        final backgroundColor = isDarkMode ? AppTheme.darkCardColor : Colors.white;
-        final textColor = isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor;
-        
+        final backgroundColor =
+            isDarkMode ? AppTheme.darkCardColor : Colors.white;
+        final textColor = isDarkMode
+            ? AppTheme.darkTextPrimaryColor
+            : AppTheme.textPrimaryColor;
+
         return AlertDialog(
           backgroundColor: backgroundColor,
           title: Text(
@@ -250,7 +276,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
               Text(
                 'Enter the device ID to confirm',
                 style: TextStyle(
-                  color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                  color: isDarkMode
+                      ? AppTheme.darkTextSecondaryColor
+                      : AppTheme.textSecondaryColor,
                 ),
               ),
               const SizedBox(height: 16),
@@ -271,14 +299,16 @@ class _SecurityScreenState extends State<SecurityScreen> {
               child: Text(
                 'Cancel',
                 style: TextStyle(
-                  color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                  color: isDarkMode
+                      ? AppTheme.darkTextSecondaryColor
+                      : AppTheme.textSecondaryColor,
                 ),
               ),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                
+
                 // Show success message
                 CustomToast.show(
                   context: context,
@@ -302,7 +332,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Security',
@@ -316,66 +346,82 @@ class _SecurityScreenState extends State<SecurityScreen> {
               title: 'Authentication',
               children: [
                 Obx(() => SettingsSwitch(
-                  title: 'Biometric Authentication',
-                  subtitle: 'Use fingerprint or face ID to unlock the app',
-                  icon: Iconsax.finger_scan,
-                  value: _securityController.biometricAuthEnabled,
-                  onChanged: (value) {
-                    if (value) {
-                      // In a real app, we would check if biometrics are available
-                      // and authenticate the user before enabling this feature
-                      _securityController.toggleBiometricAuth(value);
-                      
-                      CustomToast.show(
-                        context: context,
-                        message: 'Biometric authentication enabled',
-                        type: ToastType.success,
-                        position: ToastPosition.top,
-                      );
-                    } else {
-                      _securityController.toggleBiometricAuth(value);
-                    }
-                  },
-                )),
-                
+                      title: 'Biometric Authentication',
+                      subtitle: _biometricController.isBiometricAvailable
+                          ? 'Use ${_biometricController.biometricString} to unlock the app'
+                          : 'Biometric authentication not available on this device',
+                      icon: Iconsax.finger_scan,
+                      value: _securityController.biometricAuthEnabled,
+                      onChanged: (value) {
+                        if (!_biometricController.isBiometricAvailable) {
+                          CustomToast.show(
+                            context: context,
+                            message:
+                                'Biometric authentication not available on this device',
+                            type: ToastType.error,
+                            position: ToastPosition.top,
+                          );
+                          return;
+                        }
+
+                        _biometricController
+                            .toggleBiometric(value, context)
+                            .then((success) {
+                          if (success) {
+                            _securityController.toggleBiometricAuth(value);
+                          }
+                        });
+                      },
+                    )),
                 Obx(() => SettingsSwitch(
-                  title: 'PIN Code',
-                  subtitle: 'Require PIN code to access the app',
-                  icon: Iconsax.password_check,
-                  value: _securityController.pinCodeEnabled,
-                  onChanged: (value) {
-                    if (value) {
-                      _showPinSetupDialog();
-                    } else {
-                      _securityController.togglePinCode(value);
-                    }
-                  },
-                )),
-                
+                      title: 'PIN Code',
+                      subtitle: 'Require PIN code to access the app',
+                      icon: Iconsax.password_check,
+                      value: _securityController.pinCodeEnabled,
+                      onChanged: (value) {
+                        if (value) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PinAuthScreen(
+                                mode: PinAuthMode.setup,
+                                reason: 'Set a PIN code to protect your app',
+                                onSuccess: () {
+                                  _securityController.togglePinCode(true);
+                                },
+                              ),
+                            ),
+                          );
+                        } else {
+                          _securityController.togglePinCode(value);
+                        }
+                      },
+                    )),
                 Obx(() => SettingsSwitch(
-                  title: 'Two-Factor Authentication',
-                  subtitle: 'Add an extra layer of security to your account',
-                  icon: Iconsax.security_safe,
-                  value: _securityController.twoFactorAuthEnabled,
-                  onChanged: (value) {
-                    if (value) {
-                      // In a real app, we would guide the user through 2FA setup
-                      _securityController.toggleTwoFactorAuth(value);
-                      
-                      CustomToast.show(
-                        context: context,
-                        message: 'Two-factor authentication enabled',
-                        type: ToastType.success,
-                        position: ToastPosition.top,
-                      );
-                    } else {
-                      _securityController.toggleTwoFactorAuth(value);
-                    }
-                  },
-                )),
+                      title: 'Two-Factor Authentication',
+                      subtitle:
+                          'Add an extra layer of security to your account',
+                      icon: Iconsax.security_safe,
+                      value: _securityController.twoFactorAuthEnabled,
+                      onChanged: (value) {
+                        if (value) {
+                          // In a real app, we would guide the user through 2FA setup
+                          _securityController.toggleTwoFactorAuth(value);
+
+                          CustomToast.show(
+                            context: context,
+                            message: 'Two-factor authentication enabled',
+                            type: ToastType.success,
+                            position: ToastPosition.top,
+                          );
+                        } else {
+                          _securityController.toggleTwoFactorAuth(value);
+                        }
+                      },
+                    )),
               ],
             ),
-            
+
             // Remote device control
             SettingsCard(
               title: 'Remote Device Control',
@@ -386,7 +432,6 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   icon: Iconsax.lock_1,
                   onTap: _showRemoteLockDialog,
                 ),
-                
                 SettingsItem(
                   title: 'Remote Data Wipe',
                   subtitle: 'Erase all data from a device remotely',
@@ -396,7 +441,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 ),
               ],
             ),
-            
+
             // Security tips
             SettingsCard(
               title: 'Security Tips',
@@ -406,30 +451,29 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 _buildSecurityTip(
                   icon: Iconsax.password_check,
                   title: 'Use Strong Passwords',
-                  description: 'Create unique passwords with a mix of letters, numbers, and symbols.',
+                  description:
+                      'Create unique passwords with a mix of letters, numbers, and symbols.',
                   isDarkMode: isDarkMode,
                 ),
-                
                 const SizedBox(height: 16),
-                
                 _buildSecurityTip(
                   icon: Iconsax.security_user,
                   title: 'Enable Two-Factor Authentication',
-                  description: 'Add an extra layer of security to protect your account.',
+                  description:
+                      'Add an extra layer of security to protect your account.',
                   isDarkMode: isDarkMode,
                 ),
-                
                 const SizedBox(height: 16),
-                
                 _buildSecurityTip(
                   icon: Iconsax.shield_tick,
                   title: 'Keep Your App Updated',
-                  description: 'Regular updates include important security patches.',
+                  description:
+                      'Regular updates include important security patches.',
                   isDarkMode: isDarkMode,
                 ),
               ],
             ),
-            
+
             // Security audit button
             Padding(
               padding: const EdgeInsets.all(16),
@@ -445,11 +489,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       child: CircularProgressIndicator(),
                     ),
                   );
-                  
+
                   // Simulate a security audit
                   Future.delayed(const Duration(seconds: 2), () {
                     Navigator.of(context).pop(); // Close the loading indicator
-                    
+
                     // Show the result
                     showDialog(
                       context: context,
@@ -473,14 +517,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 isFullWidth: true,
               ),
             ),
-            
+
             const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
-  
+
   Widget _buildSecurityTip({
     required IconData icon,
     required String title,
@@ -490,7 +534,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: (isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor).withAlpha(20),
+        color: (isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor)
+            .withAlpha(20),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -499,12 +544,17 @@ class _SecurityScreenState extends State<SecurityScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: (isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor).withAlpha(40),
+              color: (isDarkMode
+                      ? AppTheme.darkPrimaryColor
+                      : AppTheme.primaryColor)
+                  .withAlpha(40),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor,
+              color: isDarkMode
+                  ? AppTheme.darkPrimaryColor
+                  : AppTheme.primaryColor,
               size: 24,
             ),
           ),
@@ -518,7 +568,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor,
+                    color: isDarkMode
+                        ? AppTheme.darkTextPrimaryColor
+                        : AppTheme.textPrimaryColor,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -526,7 +578,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                    color: isDarkMode
+                        ? AppTheme.darkTextSecondaryColor
+                        : AppTheme.textSecondaryColor,
                   ),
                 ),
               ],

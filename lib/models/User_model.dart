@@ -12,6 +12,7 @@ class UserProfileModel {
   late String username;
   String? phone;
   late String email;
+  String? profilePicture;
   Address? addressInfo;
   EmergencyContact? emergencyContact;
   late bool verified;
@@ -23,6 +24,7 @@ class UserProfileModel {
     required this.username,
     this.phone,
     required this.email,
+    this.profilePicture,
     this.addressInfo,
     this.emergencyContact,
     this.verified = false,
@@ -35,6 +37,7 @@ class UserProfileModel {
       username: json['name'] ?? '',
       phone: json['phone'],
       email: json['email'] ?? '',
+      profilePicture: json['profilePicture'],
       addressInfo: json['addressinfo'] != null
           ? Address.fromJson(json['addressinfo'])
           : null,
@@ -55,6 +58,7 @@ class UserProfileModel {
       'username': username,
       'phone': phone,
       'email': email,
+      'profilePicture': profilePicture,
       'addressinfo': addressInfo?.toJson(),
       'emergencycontact': emergencyContact?.toJson(),
       'verified': verified,

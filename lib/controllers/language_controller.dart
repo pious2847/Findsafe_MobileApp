@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:findsafe/widgets/language_selector.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';

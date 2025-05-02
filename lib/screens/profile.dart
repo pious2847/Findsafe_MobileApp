@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:findsafe/constants/custom_bottom_nav.dart';
 import 'package:findsafe/models/User_model.dart';
 import 'package:findsafe/service/auth.dart';
 import 'package:findsafe/service/device.dart';
+import 'package:findsafe/service/profile_service.dart';
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
@@ -13,6 +15,7 @@ import 'package:findsafe/widgets/profile_stats.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -62,6 +65,19 @@ class _ProfilePageState extends State<ProfilePage> {
               devices.where((device) => device.mode == 'active').length;
         } catch (e) {
           debugPrint('Error fetching devices: $e');
+        }
+      }
+
+      // Set profile picture if available
+      if (response.profilePicture != null &&
+          response.profilePicture!.isNotEmpty) {
+        // If the URL is a Cloudinary URL, use it as is
+        if (response.profilePicture!.contains('cloudinary.com')) {
+          avatarUrl = response.profilePicture;
+        } else {
+          // Otherwise, append it to the base URL
+          avatarUrl =
+              'https://findsafe-backend.onrender.com${response.profilePicture}';
         }
       }
 
@@ -139,14 +155,104 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _pickImage() {
-    // Show a toast message for now
-    CustomToast.show(
+  final ProfileService _profileService = ProfileService();
+
+  Future<void> _pickImage() async {
+    // Show a bottom sheet with options
+    showModalBottomSheet(
       context: context,
-      message: 'Profile picture upload functionality coming soon!',
-      type: ToastType.info,
-      position: ToastPosition.top,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Iconsax.camera),
+              title: const Text('Take a photo'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _getImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Iconsax.gallery),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _getImage(ImageSource.gallery);
+              },
+            ),
+            if (avatarUrl != null && avatarUrl!.isNotEmpty)
+              ListTile(
+                leading: const Icon(Iconsax.trash, color: Colors.red),
+                title: const Text('Remove photo',
+                    style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _deleteProfilePicture();
+                },
+              ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Future<void> _getImage(ImageSource source) async {
+    try {
+      final File? imageFile = await _profileService.pickImage(context, source);
+
+      if (imageFile != null) {
+        final String? newAvatarUrl =
+            await _profileService.uploadProfilePicture(context, imageFile);
+
+        if (newAvatarUrl != null) {
+          setState(() {
+            // If the URL is a Cloudinary URL, use it as is
+            if (newAvatarUrl.contains('cloudinary.com')) {
+              avatarUrl = newAvatarUrl;
+            } else {
+              // Otherwise, append it to the base URL
+              avatarUrl = 'https://findsafe-backend.onrender.com$newAvatarUrl';
+            }
+          });
+
+          // Refresh user profile to get updated data
+          await _fetchUserProfile(refresh: true);
+
+          CustomToast.show(
+            context: context,
+            message: 'Profile picture updated successfully',
+            type: ToastType.success,
+            position: ToastPosition.top,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error picking/uploading image: $e');
+    }
+  }
+
+  Future<void> _deleteProfilePicture() async {
+    try {
+      final bool success = await _profileService.deleteProfilePicture(context);
+
+      if (success) {
+        setState(() {
+          avatarUrl = null;
+        });
+
+        // Refresh user profile to get updated data
+        await _fetchUserProfile(refresh: true);
+
+        CustomToast.show(
+          context: context,
+          message: 'Profile picture removed successfully',
+          type: ToastType.success,
+          position: ToastPosition.top,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error deleting profile picture: $e');
+    }
   }
 
   void _showEditDialog(ProfileEditType type) {

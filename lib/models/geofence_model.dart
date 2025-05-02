@@ -1,10 +1,10 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 enum GeofenceType {
-  entry,    // Alert when entering the zone
-  exit,     // Alert when exiting the zone
-  dwell,    // Alert when staying in the zone for a period
-  both      // Alert on both entry and exit
+  entry, // Alert when entering the zone
+  exit, // Alert when exiting the zone
+  dwell, // Alert when staying in the zone for a period
+  both // Alert on both entry and exit
 }
 
 class GeofenceModel {
@@ -18,7 +18,7 @@ class GeofenceModel {
   bool isActive;
   DateTime createdAt;
   DateTime? updatedAt;
-  
+
   // Color for the geofence (stored as an integer)
   int color;
 
@@ -37,20 +37,44 @@ class GeofenceModel {
   });
 
   factory GeofenceModel.fromJson(Map<String, dynamic> json) {
+    // Handle different formats of center coordinates
+    LatLng getCenter() {
+      if (json.containsKey('latitude') && json.containsKey('longitude')) {
+        return LatLng(
+          double.parse(json['latitude'].toString()),
+          double.parse(json['longitude'].toString()),
+        );
+      } else if (json.containsKey('center')) {
+        if (json['center'] is Map) {
+          return LatLng(
+            double.parse(json['center']['latitude'].toString()),
+            double.parse(json['center']['longitude'].toString()),
+          );
+        } else {
+          // If center is not a map, use default coordinates
+          return const LatLng(0, 0);
+        }
+      } else {
+        // Default coordinates if none are provided
+        return const LatLng(0, 0);
+      }
+    }
+
     return GeofenceModel(
       id: json['id'],
-      name: json['name'],
+      name: json['name'] ?? 'Unnamed Geofence',
       description: json['description'],
-      center: LatLng(
-        json['latitude'] ?? json['center']['latitude'],
-        json['longitude'] ?? json['center']['longitude'],
-      ),
-      radius: (json['radius'] ?? 100.0).toDouble(),
+      center: getCenter(),
+      radius: (json['radius'] != null)
+          ? double.parse(json['radius'].toString())
+          : 100.0,
       type: _parseGeofenceType(json['type']),
       deviceId: json['deviceId'],
       isActive: json['isActive'] ?? true,
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      createdAt:
+          DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
       color: json['color'] ?? 0xFF2196F3, // Default to blue if not specified
     );
   }
@@ -74,7 +98,7 @@ class GeofenceModel {
 
   static GeofenceType _parseGeofenceType(String? typeStr) {
     if (typeStr == null) return GeofenceType.both;
-    
+
     switch (typeStr.toLowerCase()) {
       case 'entry':
         return GeofenceType.entry;

@@ -108,6 +108,12 @@ class AuthProvider {
         }
 
         await saveUserDataToLocalStorage(response.data['userId']);
+
+        // Save token if available
+        if (response.data['token'] != null) {
+          await prefs.setString('token', response.data['token']);
+        }
+
         prefs.setBool('showHome', true);
         // Successful signup
         final successMessage = response.data['message'];
@@ -239,6 +245,7 @@ class AuthProvider {
   Future<dynamic> logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('userId');
+    await prefs.remove('token'); // Clear the token
     await prefs.setBool('isLoggedIn', false);
     await prefs.setBool('showHome', false);
     // await prefs.setBool('isRegisted', false);
@@ -247,5 +254,30 @@ class AuthProvider {
         message: 'User account logout was successful',
         type: ToastType.success,
         position: ToastPosition.top);
+  }
+
+  // Save user data to local storage
+  Future<void> saveUserDataToLocalStorage(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userId', userId);
+    await prefs.setBool('isLoggedIn', true);
+  }
+
+  // Get user data from local storage
+  Future<Map<String, dynamic>> getUserDataFromLocalStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId');
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    return {
+      'userId': userId,
+      'isLoggedIn': isLoggedIn,
+    };
+  }
+
+  // Get authentication token
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
   }
 }

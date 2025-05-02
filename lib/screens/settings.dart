@@ -3,6 +3,7 @@ import 'package:findsafe/controllers/notification_controller.dart';
 import 'package:findsafe/controllers/privacy_controller.dart';
 import 'package:findsafe/controllers/security_controller.dart';
 import 'package:findsafe/controllers/theme_controller.dart';
+import 'package:findsafe/screens/notification_settings.dart';
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
 import 'package:findsafe/widgets/language_selector.dart';
@@ -146,6 +147,20 @@ class _SettingsPageState extends State<SettingsPage> {
             SettingsCard(
               title: 'Notifications',
               children: [
+                SettingsItem(
+                  title: 'Notification Settings',
+                  subtitle: 'Manage all notification preferences',
+                  icon: Iconsax.notification_bing,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const NotificationSettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
                 Obx(() => SettingsSwitch(
                       title: 'Push Notifications',
                       subtitle: 'Receive alerts on your device',
