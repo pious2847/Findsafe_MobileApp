@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindSafe Logo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .logo {
+            width: 200px;
+            height: 200px;
+            transition: transform 0.3s ease;
+        }
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        .logo-text {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+        }
+        .logo-variants {
+            display: flex;
+            gap: 40px;
+            margin-top: 50px;
+        }
+        .variant {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .variant-title {
+            font-size: 16px;
+            color: #666;
+        }
+        .small-logo {
+            width: 100px;
+            height: 100px;
+        }
+        .dark-bg {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <div class="logo">
+            <!-- Main FindSafe Logo SVG -->
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background Circle -->
+                <circle cx="100" cy="100" r="95" fill="#ffffff" stroke="#4285F4" stroke-width="3"/>
+                
+                <!-- Location Pin Base -->
+                <path d="M100 30c-27.6 0-50 22.4-50 50 0 37.5 50 90 50 90s50-52.5 50-90c0-27.6-22.4-50-50-50z" fill="#4285F4"/>
+                
+                <!-- Shield Inside Pin -->
+                <path d="M100 45c-19.3 0-35 15.7-35 35 0 26.3 35 63 35 63s35-36.7 35-63c0-19.3-15.7-35-35-35z" fill="#ffffff"/>
+                
+                <!-- Lock Inside Shield -->
+                <rect x="85" y="75" width="30" height="25" rx="5" fill="#4285F4"/>
+                <rect x="90" y="60" width="20" height="25" rx="10" fill="#4285F4" stroke="#ffffff" stroke-width="3"/>
+                <circle cx="100" cy="85" r="5" fill="#ffffff"/>
+                <rect x="98" y="85" width="4" height="10" fill="#ffffff"/>
+                
+                <!-- Radar Waves -->
+                <path d="M100 140c-33.1 0-60-26.9-60-60" fill="none" stroke="#34A853" stroke-width="3" stroke-dasharray="6,3"/>
+                <path d="M100 140c-22.1 0-40-17.9-40-40" fill="none" stroke="#FBBC05" stroke-width="3" stroke-dasharray="6,3"/>
+                <path d="M100 140c-11 0-20-9-20-20" fill="none" stroke="#EA4335" stroke-width="3" stroke-dasharray="6,3"/>
+                
+                <!-- Pulse Effect -->
+                <circle cx="100" cy="140" r="5" fill="#4285F4">
+                    <animate attributeName="r" values="5;15;5" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </div>
+        <div class="logo-text">FindSafe</div>
+    </div>
+    
+    <div class="logo-variants">
+        <div class="variant">
+            <div class="variant-title">App Icon</div>
+            <div class="small-logo">
+                <!-- App Icon Version (Simplified) -->
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Background -->
+                    <rect x="0" y="0" width="200" height="200" rx="40" fill="#4285F4"/>
+                    
+                    <!-- Location Pin -->
+                    <path d="M100 40c-22 0-40 18-40 40 0 30 40 80 40 80s40-50 40-80c0-22-18-40-40-40z" fill="#ffffff"/>
+                    
+                    <!-- Shield -->
+                    <path d="M100 55c-13.8 0-25 11.2-25 25 0 18.8 25 45 25 45s25-26.2 25-45c0-13.8-11.2-25-25-25z" fill="#4285F4"/>
+                    
+                    <!-- Lock -->
+                    <rect x="90" y="75" width="20" height="15" rx="3" fill="#ffffff"/>
+                    <rect x="93" y="65" width="14" height="15" rx="7" fill="#ffffff" stroke="#4285F4" stroke-width="2"/>
+                    <circle cx="100" cy="80" r="3" fill="#4285F4"/>
+                    <rect x="99" y="80" width="2" height="6" fill="#4285F4"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="variant">
+            <div class="variant-title">Dark Mode</div>
+            <div class="small-logo dark-bg">
+                <!-- Dark Mode Version -->
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Background Circle -->
+                    <circle cx="100" cy="100" r="95" fill="#333333" stroke="#64B5F6" stroke-width="3"/>
+                    
+                    <!-- Location Pin Base -->
+                    <path d="M100 30c-27.6 0-50 22.4-50 50 0 37.5 50 90 50 90s50-52.5 50-90c0-27.6-22.4-50-50-50z" fill="#64B5F6"/>
+                    
+                    <!-- Shield Inside Pin -->
+                    <path d="M100 45c-19.3 0-35 15.7-35 35 0 26.3 35 63 35 63s35-36.7 35-63c0-19.3-15.7-35-35-35z" fill="#333333"/>
+                    
+                    <!-- Lock Inside Shield -->
+                    <rect x="85" y="75" width="30" height="25" rx="5" fill="#64B5F6"/>
+                    <rect x="90" y="60" width="20" height="25" rx="10" fill="#64B5F6" stroke="#333333" stroke-width="3"/>
+                    <circle cx="100" cy="85" r="5" fill="#333333"/>
+                    <rect x="98" y="85" width="4" height="10" fill="#333333"/>
+                    
+                    <!-- Radar Waves -->
+                    <path d="M100 140c-33.1 0-60-26.9-60-60" fill="none" stroke="#81C784" stroke-width="3" stroke-dasharray="6,3"/>
+                    <path d="M100 140c-22.1 0-40-17.9-40-40" fill="none" stroke="#FFD54F" stroke-width="3" stroke-dasharray="6,3"/>
+                    <path d="M100 140c-11 0-20-9-20-20" fill="none" stroke="#E57373" stroke-width="3" stroke-dasharray="6,3"/>
+                    
+                    <!-- Pulse Effect -->
+                    <circle cx="100" cy="140" r="5" fill="#64B5F6">
+                        <animate attributeName="r" values="5;15;5" dur="2s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="variant">
+            <div class="variant-title">Minimal</div>
+            <div class="small-logo">
+                <!-- Minimal Version -->
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Location Pin with Shield -->
+                    <path d="M100 20c-33.1 0-60 26.9-60 60 0 45 60 100 60 100s60-55 60-100c0-33.1-26.9-60-60-60z" fill="none" stroke="#4285F4" stroke-width="6"/>
+                    
+                    <!-- Shield Inside -->
+                    <path d="M100 40c-22.1 0-40 17.9-40 40 0 30 40 70 40 70s40-40 40-70c0-22.1-17.9-40-40-40z" fill="none" stroke="#4285F4" stroke-width="4"/>
+                    
+                    <!-- Lock Symbol -->
+                    <rect x="85" y="75" width="30" height="25" rx="5" fill="none" stroke="#4285F4" stroke-width="4"/>
+                    <rect x="90" y="60" width="20" height="25" rx="10" fill="none" stroke="#4285F4" stroke-width="4"/>
+                    <circle cx="100" cy="85" r="5" fill="#4285F4"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

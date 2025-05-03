@@ -77,13 +77,13 @@ class GeofenceList extends StatelessWidget {
         onTap: () => onGeofenceSelected(geofence),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               // Color indicator
               Container(
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: Color(geofence.color).withAlpha(50),
                   shape: BoxShape.circle,
@@ -107,7 +107,7 @@ class GeofenceList extends StatelessWidget {
                     Text(
                       geofence.name,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: textColor,
                       ),
@@ -169,7 +169,7 @@ class GeofenceList extends StatelessWidget {
     final chipColor = color ?? (isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor);
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
         color: chipColor.withAlpha(30),
         borderRadius: BorderRadius.circular(12),

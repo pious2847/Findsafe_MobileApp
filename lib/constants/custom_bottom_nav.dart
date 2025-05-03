@@ -165,14 +165,14 @@ class _CustomBottomNavState extends State<CustomBottomNav>
                     _buildNavigationItem(
                       index: 3,
                       icon: Iconsax.user,
-                      activeIcon: Iconsax.user_tick5,
+                      activeIcon: Iconsax.user_cirlce_add,
                       label: 'Profile',
                       isDarkMode: isDarkMode,
                     ),
                     _buildNavigationItem(
                       index: 4,
                       icon: Iconsax.setting,
-                      activeIcon: Iconsax.setting_25,
+                      activeIcon: Iconsax.setting_3,
                       label: 'Settings',
                       isDarkMode: isDarkMode,
                     ),
@@ -218,14 +218,14 @@ class _CustomBottomNavState extends State<CustomBottomNav>
             Icon(
               isSelected ? activeIcon : icon,
               color: isSelected ? activeColor : inactiveColor,
-              size: 22,
+              size: 20,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? activeColor : inactiveColor,
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
