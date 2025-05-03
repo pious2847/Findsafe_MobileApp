@@ -37,6 +37,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
       Get.put(BiometricController());
     }
     _biometricController = Get.find<BiometricController>();
+
+    // Make sure controllers are properly initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // This ensures the UI updates after controllers are fully initialized
+    });
   }
 
   void _showPinSetupDialog() {

@@ -103,7 +103,7 @@ class ProfileStats extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: color.withAlpha(50),
                 shape: BoxShape.circle,
@@ -111,7 +111,7 @@ class ProfileStats extends StatelessWidget {
               child: Icon(
                 icon,
                 color: color,
-                size: 20,
+                size: 16,
               ),
             ),
             const SizedBox(width: 12),
@@ -121,7 +121,7 @@ class ProfileStats extends StatelessWidget {
                 Text(
                   value,
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor,
                   ),
@@ -129,10 +129,10 @@ class ProfileStats extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 7,
                     color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
                   ),
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
 
                 ),

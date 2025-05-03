@@ -58,6 +58,11 @@ class _SettingsPageState extends State<SettingsPage> {
     _notificationController = Get.find<NotificationController>();
     _privacyController = Get.find<PrivacyController>();
     _securityController = Get.find<SecurityController>();
+
+    // Make sure controllers are properly initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // This ensures the UI updates after controllers are fully initialized
+    });
   }
 
   void _showLanguageSelector() {

@@ -1,7 +1,10 @@
 import 'package:findsafe/models/location_model.dart';
+import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/widgets/custom_map_preview.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:intl/intl.dart';
 
 class LocationHistoryTable extends StatelessWidget {
   final List<Location> locationHistory;
@@ -13,127 +16,256 @@ class LocationHistoryTable extends StatelessWidget {
     required this.getPlaceName,
   });
 
- 
+  String _formatDateTime(DateTime dateTime) {
+    final DateFormat dateFormatter = DateFormat('MMM d, yyyy');
+    final DateFormat timeFormatter = DateFormat('h:mm a');
+    return '${dateFormatter.format(dateTime)} at ${timeFormatter.format(dateTime)}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final deviceWidth = MediaQuery.of(context).size.width * 0.95;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return SizedBox(
-      height: MediaQuery.of(context).size.height,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(
-            width: deviceWidth,
-            child: DataTable(
-              headingTextStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              headingRowColor: WidgetStateProperty.resolveWith(
-                (states) => Colors.blueAccent,
-              ),
-              dataRowColor: WidgetStateProperty.resolveWith(
-                (states) => states.contains(WidgetState.selected)
-                    ? Colors.blue[50]
-                    : Colors.white,
-              ),
-              dataRowHeight: 70,
-              headingRowHeight: 60,
-              dividerThickness: 1.5,
-              columnSpacing: 32,
-              columns: const <DataColumn>[
-                DataColumn(
-                  label: Text(
-                    'Location',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'Timestamp',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'Action',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-              rows: locationHistory.map((location) {
-                return DataRow(
-                  cells: [
-                    DataCell(
-                      FutureBuilder<String>(
-                        future: getPlaceName(
-                          location.latitude,
-                          location.longitude,
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: locationHistory.length,
+      itemBuilder: (context, index) {
+        final location = locationHistory[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              // Map preview
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
+                child: SizedBox(
+                  height: 120,
+                  width: double.infinity,
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(location.latitude, location.longitude),
+                          zoom: 14,
                         ),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
-                            );
-                          } else if (snapshot.hasError) {
-                            return Text(
-                              'Error: ${snapshot.error}',
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontSize: 12,
-                              ),
-                            );
-                          } else {
-                            final locationName =
-                                snapshot.data ?? 'Unknown location';
-                            return Text(
-                              locationName,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black87,
-                              ),
-                            );
-                          }
+                        mapType: MapType.normal,
+                        zoomControlsEnabled: false,
+                        zoomGesturesEnabled: false,
+                        rotateGesturesEnabled: false,
+                        scrollGesturesEnabled: false,
+                        tiltGesturesEnabled: false,
+                        myLocationEnabled: false,
+                        myLocationButtonEnabled: false,
+                        markers: {
+                          Marker(
+                            markerId: MarkerId('loc_$index'),
+                            position:
+                                LatLng(location.latitude, location.longitude),
+                          ),
                         },
                       ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: InkWell(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => LocationPreview(
+                                latitude: location.latitude,
+                                longitude: location.longitude,
+                                timestamp: location.timestamp,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? AppTheme.darkPrimaryColor
+                                  : AppTheme.primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Iconsax.maximize_4,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Location details
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Location name
+                    FutureBuilder<String>(
+                      future: getPlaceName(
+                        location.latitude,
+                        location.longitude,
+                      ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Row(
+                            children: [
+                              Icon(Iconsax.location, size: 18),
+                              SizedBox(width: 8),
+                              SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ],
+                          );
+                        } else if (snapshot.hasError) {
+                          return const Row(
+                            children: [
+                              Icon(Iconsax.location,
+                                  size: 18, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text(
+                                'Error loading location',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          );
+                        } else {
+                          final locationName =
+                              snapshot.data ?? 'Unknown location';
+                          return Row(
+                            children: [
+                              Icon(
+                                Iconsax.location,
+                                size: 18,
+                                color: isDarkMode
+                                    ? AppTheme.darkPrimaryColor
+                                    : AppTheme.primaryColor,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  locationName,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDarkMode
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                      },
                     ),
-                    DataCell(
-                      Text(
-                        location.timestamp.toLocal().toIso8601String(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
+
+                    const SizedBox(height: 12),
+
+                    // Timestamp
+                    Row(
+                      children: [
+                        Icon(
+                          Iconsax.clock,
+                          size: 16,
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _formatDateTime(location.timestamp.toLocal()),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDarkMode
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Coordinates
+                    Row(
+                      children: [
+                        Icon(
+                          Iconsax.gps,
+                          size: 16,
+                          color:
+                              isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${location.latitude.toStringAsFixed(6)}, ${location.longitude.toStringAsFixed(6)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'monospace',
+                            color: isDarkMode
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // View button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => LocationPreview(
+                              latitude: location.latitude,
+                              longitude: location.longitude,
+                              timestamp: location.timestamp,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Iconsax.eye),
+                        label: const Text('View on Map'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDarkMode
+                              ? AppTheme.darkPrimaryColor
+                              : AppTheme.primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ),
-                    DataCell(IconButton(
-                      icon: const Icon(Iconsax.eye),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => LocationPreview(
-                            latitude: location.latitude, 
-                            longitude:location.longitude, 
-                          ),
-                        );
-                      },
-                    )),
                   ],
-                );
-              }).toList(),
-            ),
+                ),
+              ),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
