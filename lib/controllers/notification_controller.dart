@@ -1,6 +1,5 @@
 import 'package:findsafe/models/geofence_model.dart';
 import 'package:findsafe/service/notification_service.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -1,7 +1,6 @@
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
-import 'package:findsafe/widgets/custom_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:iconsax/iconsax.dart';

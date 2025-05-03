@@ -2,7 +2,6 @@ import 'package:findsafe/models/devices.dart';
 import 'package:findsafe/models/location_model.dart';
 import 'package:findsafe/service/device.dart';
 import 'package:findsafe/service/location.dart';
-import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/georeverse.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
 import 'package:findsafe/utilities/utils.dart';
