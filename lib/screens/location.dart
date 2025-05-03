@@ -398,6 +398,9 @@ class _LocationHistoryState extends State<LocationHistory> {
                             ],
                           ),
                         ),
+                    
+              const SizedBox(height: 85),
+
                     ],
                   ),
                 ),

@@ -523,7 +523,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+                          const SizedBox(height: 85),
+
           ],
         ),
       ),

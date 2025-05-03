@@ -99,20 +99,36 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
         );
       }
 
-      if (widget.onSuccess != null) {
-        widget.onSuccess!();
+      // Add a small delay to prevent navigation conflicts
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (mounted) {
+        if (widget.onSuccess != null) {
+          widget.onSuccess!();
+        } else {
+          // Use the new navigation approach if no callback is provided
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       debugPrint('Error saving PIN: $e');
       _setError('Failed to save PIN');
 
-      if (widget.onFailure != null) {
-        widget.onFailure!();
+      // Add a small delay to prevent navigation conflicts
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (mounted) {
+        if (widget.onFailure != null) {
+          widget.onFailure!();
+        } else {
+          // Use the new navigation approach if no callback is provided
+          Navigator.pop(context, false);
+        }
       }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -236,16 +252,30 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
 
     if (enteredPin == _currentPin) {
       // PIN is correct
-      if (widget.onSuccess != null) {
-        widget.onSuccess!();
+      // Add a small delay to prevent navigation conflicts
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (mounted) {
+        if (widget.onSuccess != null) {
+          widget.onSuccess!();
+        } else {
+          // Use the new navigation approach if no callback is provided
+          Navigator.pop(context, true);
+        }
       }
     } else {
       // PIN is incorrect
       _setError('Incorrect PIN');
       _resetPin();
 
-      if (widget.onFailure != null) {
-        widget.onFailure!();
+      // Add a small delay to prevent navigation conflicts
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (mounted) {
+        if (widget.onFailure != null) {
+          widget.onFailure!();
+        } else {
+          // Use the new navigation approach if no callback is provided
+          Navigator.pop(context, false);
+        }
       }
     }
   }
@@ -255,10 +285,12 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
 
     if (enteredPin == _currentPin) {
       // Old PIN is correct, move to enter new PIN
-      setState(() {
-        _currentStep = 0;
-        _resetPin();
-      });
+      if (mounted) {
+        setState(() {
+          _currentStep = 0;
+          _resetPin();
+        });
+      }
     } else {
       // Old PIN is incorrect
       _setError('Incorrect PIN');
@@ -276,10 +308,12 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
     } else {
       // PINs don't match
       _setError('PINs do not match');
-      setState(() {
-        _currentStep = 0;
-        _resetPin();
-      });
+      if (mounted) {
+        setState(() {
+          _currentStep = 0;
+          _resetPin();
+        });
+      }
     }
   }
 

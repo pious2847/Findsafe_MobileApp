@@ -11,7 +11,7 @@ class BiometricAuthScreen extends StatefulWidget {
   final String reason;
   final VoidCallback onSuccess;
   final VoidCallback onFailure;
-  
+
   const BiometricAuthScreen({
     super.key,
     required this.reason,
@@ -23,66 +23,86 @@ class BiometricAuthScreen extends StatefulWidget {
   State<BiometricAuthScreen> createState() => _BiometricAuthScreenState();
 }
 
-class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTickerProviderStateMixin {
+class _BiometricAuthScreenState extends State<BiometricAuthScreen>
+    with SingleTickerProviderStateMixin {
   late BiometricController _biometricController;
   late AnimationController _animationController;
   bool _isAuthenticating = false;
   bool _authFailed = false;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize animation controller
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     );
     _animationController.repeat(reverse: true);
-    
+
     // Initialize biometric controller
     if (!Get.isRegistered<BiometricController>()) {
       Get.put(BiometricController());
     }
     _biometricController = Get.find<BiometricController>();
-    
+
     // Start authentication after the screen is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _authenticate();
     });
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   Future<void> _authenticate() async {
+    if (!mounted) return;
+
     setState(() {
       _isAuthenticating = true;
       _authFailed = false;
     });
-    
-    final authenticated = await _biometricController.authenticate(
-      reason: widget.reason,
-      context: context,
-    );
-    
-    setState(() {
-      _isAuthenticating = false;
-      _authFailed = !authenticated;
-    });
-    
-    if (authenticated) {
-      widget.onSuccess();
+
+    try {
+      final authenticated = await _biometricController.authenticate(
+        reason: widget.reason,
+        context: context,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _isAuthenticating = false;
+        _authFailed = !authenticated;
+      });
+
+      if (authenticated) {
+        // Add a small delay to prevent navigation conflicts
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted) {
+          widget.onSuccess();
+          // The onSuccess callback is required by the constructor, so we don't need to check for null
+        }
+      }
+    } catch (e) {
+      debugPrint('Error during biometric authentication: $e');
+      if (mounted) {
+        setState(() {
+          _isAuthenticating = false;
+          _authFailed = true;
+        });
+      }
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Authentication Required',
@@ -99,11 +119,14 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                 width: 200,
                 height: 200,
                 decoration: BoxDecoration(
-                  color: (isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor).withAlpha(30),
+                  color: (isDarkMode
+                          ? AppTheme.darkPrimaryColor
+                          : AppTheme.primaryColor)
+                      .withAlpha(30),
                   shape: BoxShape.circle,
                 ),
                 child: _authFailed
-                    ? Icon(
+                    ? const Icon(
                         Iconsax.shield_cross,
                         size: 80,
                         color: Colors.red,
@@ -113,12 +136,14 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                         : Icon(
                             Iconsax.finger_scan,
                             size: 80,
-                            color: isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor,
+                            color: isDarkMode
+                                ? AppTheme.darkPrimaryColor
+                                : AppTheme.primaryColor,
                           ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Title
               Text(
                 _authFailed
@@ -131,12 +156,14 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                   fontWeight: FontWeight.bold,
                   color: _authFailed
                       ? Colors.red
-                      : (isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor),
+                      : (isDarkMode
+                          ? AppTheme.darkTextPrimaryColor
+                          : AppTheme.textPrimaryColor),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Description
               Text(
                 _authFailed
@@ -145,12 +172,14 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                  color: isDarkMode
+                      ? AppTheme.darkTextSecondaryColor
+                      : AppTheme.textSecondaryColor,
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Buttons
               if (_authFailed)
                 Row(
@@ -165,12 +194,19 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
                     CustomButton(
                       text: 'Cancel',
                       icon: Iconsax.close_circle,
-                      onPressed: widget.onFailure,
+                      onPressed: () {
+                        // Add a small delay to prevent navigation conflicts
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          if (mounted) {
+                            widget.onFailure();
+                          }
+                        });
+                      },
                       backgroundColor: Colors.grey,
                     ),
                   ],
                 ),
-              
+
               if (!_isAuthenticating && !_authFailed)
                 CustomButton(
                   text: 'Authenticate',
@@ -184,7 +220,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
       ),
     );
   }
-  
+
   Widget _buildAuthenticationAnimation(bool isDarkMode) {
     return Stack(
       alignment: Alignment.center,
@@ -197,14 +233,16 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
               width: 150 + (50 * _animationController.value),
               height: 150 + (50 * _animationController.value),
               decoration: BoxDecoration(
-                color: (isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor)
+                color: (isDarkMode
+                        ? AppTheme.darkPrimaryColor
+                        : AppTheme.primaryColor)
                     .withAlpha((50 * (1 - _animationController.value)).toInt()),
                 shape: BoxShape.circle,
               ),
             );
           },
         ),
-        
+
         // Fingerprint icon
         Icon(
           Iconsax.finger_scan,
