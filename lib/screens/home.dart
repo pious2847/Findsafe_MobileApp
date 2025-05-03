@@ -34,7 +34,7 @@ class _HomeState extends State<Home> {
   MapType _currentMapType = MapType.hybrid;
   late GeofenceController _geofenceController;
   late NotificationController _notificationController;
-  bool _showGeofences = false;
+  final RxBool _showGeofences = false.obs;
 
   final locationApiService = LocationApiService();
 
@@ -292,9 +292,9 @@ class _HomeState extends State<Home> {
         children: [
           // Google Map
           Obx(() {
-            final geofenceCircles = _showGeofences
-                ? _geofenceController.geofenceCircles
-                : <Circle>{};
+            // Make sure we're using a reactive variable from the controller
+            final circles = _geofenceController.geofenceCircles;
+            final geofenceCircles = _showGeofences ? circles : <Circle>{};
 
             return GoogleMap(
               initialCameraPosition: initialCameraPosition,

@@ -1,6 +1,7 @@
 import 'package:findsafe/controllers/geofence_controller.dart';
 import 'package:findsafe/models/geofence_model.dart';
 import 'package:findsafe/service/device.dart';
+import 'package:findsafe/service/location.dart';
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
@@ -62,7 +63,9 @@ class _GeofenceScreenState extends State<GeofenceScreen> with SingleTickerProvid
   
   Future<void> _loadDeviceLocation() async {
     try {
-      final location = await _deviceApiService.fetchLatestLocation(widget.deviceId);
+      // Use LocationApiService instead of DeviceApiService for fetching location
+      final locationService = LocationApiService();
+      final location = await locationService.fetchLatestLocation(widget.deviceId);
       if (location != null) {
         setState(() {
           _deviceLocation = location;
@@ -72,7 +75,7 @@ class _GeofenceScreenState extends State<GeofenceScreen> with SingleTickerProvid
         _mapController.animateCamera(
           CameraUpdate.newLatLngZoom(location, 15),
         );
-            }
+      }
     } catch (e) {
       debugPrint('Error loading device location: $e');
     }
@@ -343,3 +346,5 @@ class CustomIconButton extends StatelessWidget {
     );
   }
 }
+
+

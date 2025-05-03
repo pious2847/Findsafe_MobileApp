@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:dio/dio.dart';
 import 'package:findsafe/models/geofence_model.dart';
@@ -293,10 +294,10 @@ class GeofenceApiService {
     const c = 6371000.0; // Earth radius in meters
     
     final a = 0.5 - 
-        (((lat2 - lat1) * p) / 2).cos() / 2 + 
-        ((lat1 * p).cos() * (lat2 * p).cos() * (1 - ((lon2 - lon1) * p).cos())) / 2;
+        math.cos((lat2 - lat1) * p) / 2 + 
+        math.cos(lat1 * p) * math.cos(lat2 * p) * (1 - math.cos((lon2 - lon1) * p)) / 2;
     
-    return 2 * c * (a * 0.5).asin(); // Distance in meters
+    return 2 * c * math.asin(math.sqrt(a)); // Distance in meters
   }
 
   // Get mock geofences for development
@@ -341,3 +342,5 @@ class GeofenceApiService {
     ];
   }
 }
+
+

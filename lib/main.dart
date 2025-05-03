@@ -1,7 +1,7 @@
 import 'package:findsafe/controllers/theme_controller.dart';
 import 'package:findsafe/screens/splashscreen.dart';
 import 'package:findsafe/theme/app_theme.dart';
-import 'package:findsafe/utilities/background_worker.dart';
+import 'package:findsafe/utilities/background_worker_simple.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
