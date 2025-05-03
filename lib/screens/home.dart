@@ -127,9 +127,7 @@ class _HomeState extends State<Home> {
 
   // Function to toggle geofences visibility
   void _toggleGeofences() {
-    setState(() {
-      _showGeofences = !_showGeofences;
-    });
+    _showGeofences.value = !_showGeofences.value;
   }
 
   // Function to navigate to device location
@@ -294,7 +292,7 @@ class _HomeState extends State<Home> {
           Obx(() {
             // Make sure we're using a reactive variable from the controller
             final circles = _geofenceController.geofenceCircles;
-            final geofenceCircles = _showGeofences ? circles : <Circle>{};
+            final geofenceCircles = _showGeofences.value ? circles : <Circle>{};
 
             return GoogleMap(
               initialCameraPosition: initialCameraPosition,
@@ -335,7 +333,7 @@ class _HomeState extends State<Home> {
             isDeviceSheetOpen: _isDraggableOpen,
             hasDeviceLocation: _deviceCurrentLocation != null,
             isMapTypeHybrid: _currentMapType == MapType.hybrid,
-            showGeofences: _showGeofences,
+            showGeofences: _showGeofences.value,
             onToggleMapType: _toggleMapType,
           ),
         ],

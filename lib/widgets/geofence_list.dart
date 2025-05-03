@@ -124,7 +124,7 @@ class GeofenceList extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 9),
                     Row(
                       children: [
                         _buildInfoChip(
@@ -132,13 +132,13 @@ class GeofenceList extends StatelessWidget {
                           '${geofence.radius.toInt()}m',
                           Iconsax.ruler,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 7),
                         _buildInfoChip(
                           context,
                           _getGeofenceTypeText(geofence.type),
                           _getGeofenceTypeIcon(geofence.type),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 7),
                         _buildInfoChip(
                           context,
                           geofence.isActive ? 'Active' : 'Inactive',
@@ -186,10 +186,11 @@ class GeofenceList extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: chipColor,
               fontWeight: FontWeight.w500,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

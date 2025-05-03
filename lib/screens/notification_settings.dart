@@ -11,28 +11,32 @@ class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
+  State<NotificationSettingsScreen> createState() =>
+      _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState
+    extends State<NotificationSettingsScreen> {
   late NotificationController _notificationController;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize controller if it doesn't exist
     if (!Get.isRegistered<NotificationController>()) {
       Get.put(NotificationController());
     }
-    
+
     _notificationController = Get.find<NotificationController>();
+
+    // The controller is already initialized in its onInit method
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Notification Settings',
@@ -48,51 +52,63 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               title: 'Notification Types',
               children: [
                 Obx(() => SettingsSwitch(
-                  title: 'Geofence Alerts',
-                  subtitle: 'Get notified when devices enter or exit geofences',
-                  icon: Iconsax.radar,
-                  value: _notificationController.geofenceNotificationsEnabled,
-                  onChanged: (value) {
-                    _notificationController.toggleGeofenceNotifications(value);
-                  },
-                )),
+                      title: 'Geofence Alerts',
+                      subtitle:
+                          'Get notified when devices enter or exit geofences',
+                      icon: Iconsax.radar,
+                      value:
+                          _notificationController.geofenceNotificationsEnabled,
+                      onChanged: (value) {
+                        _notificationController
+                            .toggleGeofenceNotifications(value);
+                      },
+                    )),
                 Obx(() => SettingsSwitch(
-                  title: 'Device Status',
-                  subtitle: 'Get notified about device status changes',
-                  icon: Iconsax.mobile,
-                  value: _notificationController.deviceStatusNotificationsEnabled,
-                  onChanged: (value) {
-                    _notificationController.toggleDeviceStatusNotifications(value);
-                  },
-                )),
+                      title: 'Device Status',
+                      subtitle: 'Get notified about device status changes',
+                      icon: Iconsax.mobile,
+                      value: _notificationController
+                          .deviceStatusNotificationsEnabled,
+                      onChanged: (value) {
+                        _notificationController
+                            .toggleDeviceStatusNotifications(value);
+                      },
+                    )),
                 Obx(() => SettingsSwitch(
-                  title: 'Low Battery',
-                  subtitle: 'Get notified when device battery is low',
-                  icon: Iconsax.battery_empty1,
-                  value: _notificationController.lowBatteryNotificationsEnabled,
-                  onChanged: (value) {
-                    _notificationController.toggleLowBatteryNotifications(value);
-                  },
-                )),
+                      title: 'Low Battery',
+                      subtitle: 'Get notified when device battery is low',
+                      icon: Iconsax.battery_empty1,
+                      value: _notificationController
+                          .lowBatteryNotificationsEnabled,
+                      onChanged: (value) {
+                        _notificationController
+                            .toggleLowBatteryNotifications(value);
+                      },
+                    )),
                 Obx(() => SettingsSwitch(
-                  title: 'Security Alerts',
-                  subtitle: 'Get notified about security events',
-                  icon: Iconsax.shield_security,
-                  value: _notificationController.securityNotificationsEnabled,
-                  onChanged: (value) {
-                    _notificationController.toggleSecurityNotifications(value);
-                  },
-                )),
+                      title: 'Security Alerts',
+                      subtitle: 'Get notified about security events',
+                      icon: Iconsax.shield_security,
+                      value:
+                          _notificationController.securityNotificationsEnabled,
+                      onChanged: (value) {
+                        _notificationController
+                            .toggleSecurityNotifications(value);
+                      },
+                    )),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Notification tips
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: (isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor).withAlpha(20),
+                color: (isDarkMode
+                        ? AppTheme.darkPrimaryColor
+                        : AppTheme.primaryColor)
+                    .withAlpha(20),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -102,7 +118,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                     children: [
                       Icon(
                         Iconsax.info_circle,
-                        color: isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor,
+                        color: isDarkMode
+                            ? AppTheme.darkPrimaryColor
+                            : AppTheme.primaryColor,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -111,7 +129,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor,
+                          color: isDarkMode
+                              ? AppTheme.darkTextPrimaryColor
+                              : AppTheme.textPrimaryColor,
                         ),
                       ),
                     ],
@@ -121,7 +141,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                     '• Make sure notifications are enabled in your device settings',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                      color: isDarkMode
+                          ? AppTheme.darkTextSecondaryColor
+                          : AppTheme.textSecondaryColor,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -129,7 +151,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                     '• For geofence alerts to work, location services must be enabled',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                      color: isDarkMode
+                          ? AppTheme.darkTextSecondaryColor
+                          : AppTheme.textSecondaryColor,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -137,15 +161,17 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                     '• Battery optimization may affect notification delivery',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                      color: isDarkMode
+                          ? AppTheme.darkTextSecondaryColor
+                          : AppTheme.textSecondaryColor,
                     ),
                   ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Test notification button
             Center(
               child: ElevatedButton.icon(
@@ -158,9 +184,12 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 icon: const Icon(Iconsax.notification),
                 label: const Text('Send Test Notification'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor,
+                  backgroundColor: isDarkMode
+                      ? AppTheme.darkPrimaryColor
+                      : AppTheme.primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
             ),

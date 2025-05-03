@@ -132,6 +132,9 @@ class ProfileStats extends StatelessWidget {
                     fontSize: 12,
                     color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+
                 ),
               ],
             ),
