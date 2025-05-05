@@ -4,7 +4,9 @@ import 'package:findsafe/controllers/privacy_controller.dart';
 import 'package:findsafe/controllers/security_controller.dart';
 import 'package:findsafe/controllers/theme_controller.dart';
 import 'package:findsafe/screens/notification_settings.dart';
+import 'package:findsafe/screens/security.dart';
 import 'package:findsafe/theme/app_theme.dart';
+import 'package:findsafe/widgets/auth_wrapper.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
 import 'package:findsafe/widgets/language_selector.dart';
 import 'package:findsafe/widgets/premium_card.dart';
@@ -225,7 +227,16 @@ class _SettingsPageState extends State<SettingsPage> {
                   subtitle: 'Manage app security and authentication',
                   icon: Iconsax.shield_security,
                   onTap: () {
-                    widget.onPageChanged(5);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AuthWrapper(
+                          reason:
+                              'Authentication required to access security settings',
+                          child: SecurityScreen(),
+                        ),
+                      ),
+                    );
                   },
                 ),
                 Obx(() => SettingsSwitch(

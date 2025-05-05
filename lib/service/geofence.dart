@@ -29,15 +29,17 @@ class GeofenceApiService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final cachedData = prefs.getString('cached_geofences');
-      
+
       if (cachedData != null) {
         final List<dynamic> geofencesJson = jsonDecode(cachedData);
-        return geofencesJson.map((json) => GeofenceModel.fromJson(json)).toList();
+        return geofencesJson
+            .map((json) => GeofenceModel.fromJson(json))
+            .toList();
       }
     } catch (e) {
       debugPrint('Error getting cached geofences: $e');
     }
-    
+
     return [];
   }
 
@@ -45,11 +47,11 @@ class GeofenceApiService {
   Future<List<GeofenceModel>> fetchGeofences(BuildContext context) async {
     try {
       final token = await _authProvider.getToken();
-      
+
       if (token == null) {
         throw Exception('Authentication token not found');
       }
-      
+
       final response = await _dio.get(
         '$_baseUrl/geofences',
         options: Options(
@@ -58,14 +60,15 @@ class GeofenceApiService {
           },
         ),
       );
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> geofencesJson = response.data['data'];
-        final geofences = geofencesJson.map((json) => GeofenceModel.fromJson(json)).toList();
-        
+        final geofences =
+            geofencesJson.map((json) => GeofenceModel.fromJson(json)).toList();
+
         // Cache the geofences
         await _cacheGeofences(geofences);
-        
+
         return geofences;
       } else {
         // If server returns an error, try to get cached data
@@ -73,36 +76,37 @@ class GeofenceApiService {
         if (cachedGeofences.isNotEmpty) {
           return cachedGeofences;
         }
-        
+
         throw Exception('Failed to load geofences');
       }
     } catch (e) {
       debugPrint('Error fetching geofences: $e');
-      
+
       // If there's an error, try to get cached data
       final cachedGeofences = await getCachedGeofences();
       if (cachedGeofences.isNotEmpty) {
         return cachedGeofences;
       }
-      
+
       // If we're in development mode, return some mock data
       if (const bool.fromEnvironment('dart.vm.product') == false) {
         return _getMockGeofences();
       }
-      
+
       throw Exception('Failed to load geofences: $e');
     }
   }
 
   // Create a new geofence
-  Future<GeofenceModel> createGeofence(BuildContext context, GeofenceModel geofence) async {
+  Future<GeofenceModel> createGeofence(
+      BuildContext context, GeofenceModel geofence) async {
     try {
       final token = await _authProvider.getToken();
-      
+
       if (token == null) {
         throw Exception('Authentication token not found');
       }
-      
+
       final response = await _dio.post(
         '$_baseUrl/geofences',
         data: geofence.toJson(),
@@ -112,51 +116,54 @@ class GeofenceApiService {
           },
         ),
       );
-      
+
+      print("the response from the server : $response");
+
       if (response.statusCode == 201) {
         final createdGeofence = GeofenceModel.fromJson(response.data['data']);
-        
+
         // Update the cache
         final cachedGeofences = await getCachedGeofences();
         cachedGeofences.add(createdGeofence);
         await _cacheGeofences(cachedGeofences);
-        
+
         return createdGeofence;
       } else {
         throw Exception('Failed to create geofence');
       }
     } catch (e) {
       debugPrint('Error creating geofence: $e');
-      
+
       // If we're in development mode, return a mock response
       if (const bool.fromEnvironment('dart.vm.product') == false) {
         geofence.id = DateTime.now().millisecondsSinceEpoch.toString();
-        
+
         // Update the cache
         final cachedGeofences = await getCachedGeofences();
         cachedGeofences.add(geofence);
         await _cacheGeofences(cachedGeofences);
-        
+
         return geofence;
       }
-      
+
       throw Exception('Failed to create geofence: $e');
     }
   }
 
   // Update an existing geofence
-  Future<GeofenceModel> updateGeofence(BuildContext context, GeofenceModel geofence) async {
+  Future<GeofenceModel> updateGeofence(
+      BuildContext context, GeofenceModel geofence) async {
     try {
       final token = await _authProvider.getToken();
-      
+
       if (token == null) {
         throw Exception('Authentication token not found');
       }
-      
+
       if (geofence.id == null) {
         throw Exception('Geofence ID is required for update');
       }
-      
+
       final response = await _dio.put(
         '$_baseUrl/geofences/${geofence.id}',
         data: geofence.toJson(),
@@ -166,10 +173,10 @@ class GeofenceApiService {
           },
         ),
       );
-      
+
       if (response.statusCode == 200) {
         final updatedGeofence = GeofenceModel.fromJson(response.data['data']);
-        
+
         // Update the cache
         final cachedGeofences = await getCachedGeofences();
         final index = cachedGeofences.indexWhere((g) => g.id == geofence.id);
@@ -177,18 +184,18 @@ class GeofenceApiService {
           cachedGeofences[index] = updatedGeofence;
           await _cacheGeofences(cachedGeofences);
         }
-        
+
         return updatedGeofence;
       } else {
         throw Exception('Failed to update geofence');
       }
     } catch (e) {
       debugPrint('Error updating geofence: $e');
-      
+
       // If we're in development mode, return a mock response
       if (const bool.fromEnvironment('dart.vm.product') == false) {
         geofence.updatedAt = DateTime.now();
-        
+
         // Update the cache
         final cachedGeofences = await getCachedGeofences();
         final index = cachedGeofences.indexWhere((g) => g.id == geofence.id);
@@ -196,10 +203,10 @@ class GeofenceApiService {
           cachedGeofences[index] = geofence;
           await _cacheGeofences(cachedGeofences);
         }
-        
+
         return geofence;
       }
-      
+
       throw Exception('Failed to update geofence: $e');
     }
   }
@@ -208,11 +215,11 @@ class GeofenceApiService {
   Future<bool> deleteGeofence(BuildContext context, String geofenceId) async {
     try {
       final token = await _authProvider.getToken();
-      
+
       if (token == null) {
         throw Exception('Authentication token not found');
       }
-      
+
       final response = await _dio.delete(
         '$_baseUrl/geofences/$geofenceId',
         options: Options(
@@ -221,39 +228,42 @@ class GeofenceApiService {
           },
         ),
       );
-      
+
       if (response.statusCode == 200) {
         // Update the cache
         final cachedGeofences = await getCachedGeofences();
         cachedGeofences.removeWhere((g) => g.id == geofenceId);
         await _cacheGeofences(cachedGeofences);
-        
+
         return true;
       } else {
         throw Exception('Failed to delete geofence');
       }
     } catch (e) {
       debugPrint('Error deleting geofence: $e');
-      
+
       // If we're in development mode, return a mock response
       if (const bool.fromEnvironment('dart.vm.product') == false) {
         // Update the cache
         final cachedGeofences = await getCachedGeofences();
         cachedGeofences.removeWhere((g) => g.id == geofenceId);
         await _cacheGeofences(cachedGeofences);
-        
+
         return true;
       }
-      
+
       throw Exception('Failed to delete geofence: $e');
     }
   }
 
   // Get geofences for a specific device
-  Future<List<GeofenceModel>> getGeofencesForDevice(BuildContext context, String deviceId) async {
+  Future<List<GeofenceModel>> getGeofencesForDevice(
+      BuildContext context, String deviceId) async {
     try {
       final allGeofences = await fetchGeofences(context);
-      return allGeofences.where((geofence) => geofence.deviceId == deviceId).toList();
+      return allGeofences
+          .where((geofence) => geofence.deviceId == deviceId)
+          .toList();
     } catch (e) {
       debugPrint('Error getting geofences for device: $e');
       throw Exception('Failed to get geofences for device: $e');
@@ -261,26 +271,27 @@ class GeofenceApiService {
   }
 
   // Check if a location is within any geofence
-  Future<List<GeofenceModel>> checkGeofences(BuildContext context, LatLng location, String deviceId) async {
+  Future<List<GeofenceModel>> checkGeofences(
+      BuildContext context, LatLng location, String deviceId) async {
     try {
       final geofences = await getGeofencesForDevice(context, deviceId);
       final triggeredGeofences = <GeofenceModel>[];
-      
+
       for (final geofence in geofences) {
         if (!geofence.isActive) continue;
-        
+
         final distance = _calculateDistance(
           geofence.center.latitude,
           geofence.center.longitude,
           location.latitude,
           location.longitude,
         );
-        
+
         if (distance <= geofence.radius) {
           triggeredGeofences.add(geofence);
         }
       }
-      
+
       return triggeredGeofences;
     } catch (e) {
       debugPrint('Error checking geofences: $e');
@@ -289,14 +300,18 @@ class GeofenceApiService {
   }
 
   // Calculate distance between two points using Haversine formula
-  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  double _calculateDistance(
+      double lat1, double lon1, double lat2, double lon2) {
     const p = 0.017453292519943295; // Math.PI / 180
     const c = 6371000.0; // Earth radius in meters
-    
-    final a = 0.5 - 
-        math.cos((lat2 - lat1) * p) / 2 + 
-        math.cos(lat1 * p) * math.cos(lat2 * p) * (1 - math.cos((lon2 - lon1) * p)) / 2;
-    
+
+    final a = 0.5 -
+        math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) *
+            math.cos(lat2 * p) *
+            (1 - math.cos((lon2 - lon1) * p)) /
+            2;
+
     return 2 * c * math.asin(math.sqrt(a)); // Distance in meters
   }
 
@@ -342,5 +357,3 @@ class GeofenceApiService {
     ];
   }
 }
-
-

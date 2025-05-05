@@ -339,9 +339,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: const CustomAppBar(
+      appBar: CustomAppBar(
         title: 'Security',
-        showBackButton: true,
+        showBackButton: false,
+        onBackPressed: () {
+          // Navigate back to the Settings tab
+          Get.back();
+        },
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -523,8 +527,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               ),
             ),
 
-                          const SizedBox(height: 85),
-
+            const SizedBox(height: 85),
           ],
         ),
       ),

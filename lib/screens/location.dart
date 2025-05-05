@@ -203,6 +203,7 @@ class _LocationHistoryState extends State<LocationHistory> {
         actions: [
           // Refresh button
           IconButton(
+            color: isDarkMode ? Colors.white : Colors.black,
             icon: const Icon(Iconsax.refresh),
             onPressed: () {
               if (selectedDevice != null) {
@@ -212,6 +213,7 @@ class _LocationHistoryState extends State<LocationHistory> {
           ),
           // Filter button
           IconButton(
+            color: isDarkMode ? Colors.white : Colors.black,
             icon: const Icon(Iconsax.calendar),
             onPressed: () => _selectDateRange(context),
           ),
