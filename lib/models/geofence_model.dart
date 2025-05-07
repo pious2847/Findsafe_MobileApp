@@ -14,12 +14,10 @@ class GeofenceModel {
   LatLng center;
   double radius;
   GeofenceType type;
-  String? deviceId;
+  String deviceId; // Changed to required
   bool isActive;
   DateTime createdAt;
   DateTime? updatedAt;
-
-  // Color for the geofence (stored as an integer)
   int color;
 
   GeofenceModel({
@@ -29,7 +27,7 @@ class GeofenceModel {
     required this.center,
     required this.radius,
     required this.type,
-    this.deviceId,
+    required this.deviceId, // Changed to required
     this.isActive = true,
     required this.createdAt,
     this.updatedAt,
@@ -39,21 +37,18 @@ class GeofenceModel {
   factory GeofenceModel.fromJson(Map<String, dynamic> json) {
     // Handle different formats of center coordinates
     LatLng getCenter() {
-      if (json.containsKey('latitude') && json.containsKey('longitude')) {
+      if (json.containsKey('center')) {
+        // Handle center as an object with latitude and longitude
+        return LatLng(
+          double.parse(json['center']['latitude'].toString()),
+          double.parse(json['center']['longitude'].toString()),
+        );
+      } else if (json.containsKey('latitude') && json.containsKey('longitude')) {
+        // Handle flat structure
         return LatLng(
           double.parse(json['latitude'].toString()),
           double.parse(json['longitude'].toString()),
         );
-      } else if (json.containsKey('center')) {
-        if (json['center'] is Map) {
-          return LatLng(
-            double.parse(json['center']['latitude'].toString()),
-            double.parse(json['center']['longitude'].toString()),
-          );
-        } else {
-          // If center is not a map, use default coordinates
-          return const LatLng(0, 0);
-        }
       } else {
         // Default coordinates if none are provided
         return const LatLng(0, 0);
@@ -61,7 +56,7 @@ class GeofenceModel {
     }
 
     return GeofenceModel(
-      id: json['id'],
+      id: json['_id'] ?? json['id'], // Handle both MongoDB _id and client-side id
       name: json['name'] ?? 'Unnamed Geofence',
       description: json['description'],
       center: getCenter(),
@@ -69,13 +64,15 @@ class GeofenceModel {
           ? double.parse(json['radius'].toString())
           : 100.0,
       type: _parseGeofenceType(json['type']),
-      deviceId: json['deviceId'],
+      deviceId: json['deviceId'] ?? '',
       isActive: json['isActive'] ?? true,
-      createdAt:
-          DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt:
-          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
-      color: json['color'] ?? 0xFF2196F3, // Default to blue if not specified
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt'].toString()) 
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null 
+          ? DateTime.parse(json['updatedAt'].toString()) 
+          : null,
+      color: json['color'] ?? 0xFF4CAF50, // Default to green if not specified
     );
   }
 
@@ -84,8 +81,10 @@ class GeofenceModel {
       'id': id,
       'name': name,
       'description': description,
-      'latitude': center.latitude,
-      'longitude': center.longitude,
+      'center': {
+        'latitude': center.latitude,
+        'longitude': center.longitude
+      },
       'radius': radius,
       'type': type.toString().split('.').last,
       'deviceId': deviceId,

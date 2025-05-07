@@ -12,7 +12,12 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
 class CustomBottomNav extends StatefulWidget {
-  const CustomBottomNav({super.key});
+  final int initialIndex;
+
+  const CustomBottomNav({
+    super.key,
+    this.initialIndex = 0,
+  });
 
   // Add a method to navigate to a specific tab
   void navigateToTab(int index) {
@@ -27,8 +32,8 @@ class CustomBottomNav extends StatefulWidget {
 
 class _CustomBottomNavState extends State<CustomBottomNav>
     with SingleTickerProviderStateMixin {
-  int _selectedIndex = 0;
-  final PageController _pageController = PageController();
+  late int _selectedIndex;
+  late PageController _pageController;
   bool _isMenuOpen = false;
   final GlobalKey _menuKey = GlobalKey();
   late AnimationController _animationController;
@@ -39,6 +44,10 @@ class _CustomBottomNavState extends State<CustomBottomNav>
   @override
   void initState() {
     super.initState();
+
+    // Initialize with the provided initialIndex
+    _selectedIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: _selectedIndex);
 
     // Register this state with Get for navigation
     Get.put(this, tag: 'bottomNavState');
@@ -73,6 +82,13 @@ class _CustomBottomNavState extends State<CustomBottomNav>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
+
+    // Jump to the initial page
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_selectedIndex != 0) {
+        _onItemTapped(_selectedIndex);
+      }
+    });
   }
 
   @override

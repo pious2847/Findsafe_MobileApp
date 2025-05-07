@@ -10,7 +10,7 @@ class GeofenceEditor extends StatefulWidget {
   final String deviceId;
   final Function(GeofenceModel) onSave;
   final VoidCallback onCancel;
-  
+
   const GeofenceEditor({
     super.key,
     this.initialGeofence,
@@ -28,12 +28,12 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
   late TextEditingController _radiusController;
-  
+
   late LatLng _center;
   late double _radius;
   late GeofenceType _type;
   late int _color;
-  
+
   final List<Color> _colorOptions = [
     Colors.blue,
     Colors.red,
@@ -44,21 +44,23 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
     Colors.pink,
     Colors.amber,
   ];
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize with values from the initial geofence or defaults
-    _nameController = TextEditingController(text: widget.initialGeofence?.name ?? 'New Geofence');
-    _descriptionController = TextEditingController(text: widget.initialGeofence?.description ?? '');
+    _nameController = TextEditingController(
+        text: widget.initialGeofence?.name ?? 'New Geofence');
+    _descriptionController =
+        TextEditingController(text: widget.initialGeofence?.description ?? '');
     _center = widget.initialGeofence?.center ?? const LatLng(0, 0);
     _radius = widget.initialGeofence?.radius ?? 100.0;
     _radiusController = TextEditingController(text: _radius.toStringAsFixed(0));
     _type = widget.initialGeofence?.type ?? GeofenceType.both;
     _color = widget.initialGeofence?.color ?? _colorOptions[0].value;
   }
-  
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -66,7 +68,7 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
     _radiusController.dispose();
     super.dispose();
   }
-  
+
   void _handleSave() {
     if (_formKey.currentState!.validate()) {
       final geofence = GeofenceModel(
@@ -82,15 +84,15 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
         updatedAt: DateTime.now(),
         color: _color,
       );
-      
+
       widget.onSave(geofence);
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -118,11 +120,15 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.initialGeofence != null ? 'Edit Geofence' : 'New Geofence',
+                  widget.initialGeofence != null
+                      ? 'Edit Geofence'
+                      : 'New Geofence',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor,
+                    color: isDarkMode
+                        ? AppTheme.darkTextPrimaryColor
+                        : AppTheme.textPrimaryColor,
                   ),
                 ),
                 IconButton(
@@ -133,9 +139,9 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Name field
             TextFormField(
               controller: _nameController,
@@ -150,9 +156,9 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Description field
             TextFormField(
               controller: _descriptionController,
@@ -162,9 +168,9 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
               ),
               maxLines: 2,
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Radius field
             TextFormField(
               controller: _radiusController,
@@ -193,21 +199,23 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
                 }
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Geofence type
             Text(
               'Geofence Type',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor,
+                color: isDarkMode
+                    ? AppTheme.darkTextPrimaryColor
+                    : AppTheme.textPrimaryColor,
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Type selection
             Wrap(
               spacing: 8,
@@ -218,29 +226,32 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
                 _buildTypeChip(GeofenceType.both, 'Both', Iconsax.repeat),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Color selection
             Text(
               'Color',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor,
+                color: isDarkMode
+                    ? AppTheme.darkTextPrimaryColor
+                    : AppTheme.textPrimaryColor,
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Color options
             Wrap(
               spacing: 8,
-              children: _colorOptions.map((color) => _buildColorChip(color)).toList(),
+              children:
+                  _colorOptions.map((color) => _buildColorChip(color)).toList(),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -250,7 +261,9 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
                   child: Text(
                     'Cancel',
                     style: TextStyle(
-                      color: isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor,
+                      color: isDarkMode
+                          ? AppTheme.darkTextSecondaryColor
+                          : AppTheme.textSecondaryColor,
                     ),
                   ),
                 ),
@@ -267,11 +280,11 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
       ),
     );
   }
-  
+
   Widget _buildTypeChip(GeofenceType type, String label, IconData icon) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isSelected = _type == type;
-    
+
     return ChoiceChip(
       label: Row(
         mainAxisSize: MainAxisSize.min,
@@ -281,7 +294,9 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
             size: 16,
             color: isSelected
                 ? Colors.white
-                : (isDarkMode ? AppTheme.darkTextSecondaryColor : AppTheme.textSecondaryColor),
+                : (isDarkMode
+                    ? AppTheme.darkTextSecondaryColor
+                    : AppTheme.textSecondaryColor),
           ),
           const SizedBox(width: 4),
           Text(label),
@@ -296,18 +311,21 @@ class _GeofenceEditorState extends State<GeofenceEditor> {
         }
       },
       backgroundColor: isDarkMode ? AppTheme.darkCardColor : Colors.grey[200],
-      selectedColor: isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor,
+      selectedColor:
+          isDarkMode ? AppTheme.darkPrimaryColor : AppTheme.primaryColor,
       labelStyle: TextStyle(
         color: isSelected
             ? Colors.white
-            : (isDarkMode ? AppTheme.darkTextPrimaryColor : AppTheme.textPrimaryColor),
+            : (isDarkMode
+                ? AppTheme.darkTextPrimaryColor
+                : AppTheme.textPrimaryColor),
       ),
     );
   }
-  
+
   Widget _buildColorChip(Color color) {
     final isSelected = _color == color.value;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {

@@ -107,15 +107,30 @@ class GeofenceApiService {
         throw Exception('Authentication token not found');
       }
 
-      final response = await _dio.post(
-        '$_baseUrl/geofences',
-        data: geofence.toJson(),
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
-      );
+    // Convert the model to match the backend schema
+    final Map<String, dynamic> data = {
+      'name': geofence.name,
+      'description': geofence.description,
+      'center': {
+        'latitude': geofence.center.latitude,
+        'longitude': geofence.center.longitude
+      },
+      'radius': geofence.radius,
+      'type': geofence.type.toString().split('.').last,
+      'deviceId': geofence.deviceId,
+      'isActive': geofence.isActive,
+      'color': geofence.color,
+    };
+
+     final response = await _dio.post(
+      '$_baseUrl/geofences',
+      data: data,
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ),
+    );
 
       print("the response from the server : $response");
 

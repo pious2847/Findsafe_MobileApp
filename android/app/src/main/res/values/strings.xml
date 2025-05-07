@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="device_admin_label">FindSafe Device Admin</string>
+    <string name="device_admin_description">Enable device admin to allow remote security features like device locking and data wiping</string>
+</resources>

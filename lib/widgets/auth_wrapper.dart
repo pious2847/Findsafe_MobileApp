@@ -2,6 +2,7 @@ import 'package:findsafe/controllers/biometric_controller.dart';
 import 'package:findsafe/controllers/security_controller.dart';
 import 'package:findsafe/screens/biometric_auth.dart';
 import 'package:findsafe/screens/pin_auth.dart';
+import 'package:findsafe/utilities/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,32 +23,44 @@ class AuthWrapper extends StatefulWidget {
 class _AuthWrapperState extends State<AuthWrapper> {
   late SecurityController _securityController;
   late BiometricController _biometricController;
+  final _logger = AppLogger.getLogger('AuthWrapper');
   bool _isAuthenticated = false;
   bool _isAuthenticating = true;
 
   @override
   void initState() {
     super.initState();
+    _logger.info('Initializing AuthWrapper with reason: ${widget.reason}');
 
     // Initialize controllers
+    _logger.info('Setting up security controller');
     if (!Get.isRegistered<SecurityController>()) {
+      _logger.info('Registering SecurityController with GetX');
       Get.put(SecurityController());
     }
     _securityController = Get.find<SecurityController>();
 
+    _logger.info('Setting up biometric controller');
     if (!Get.isRegistered<BiometricController>()) {
+      _logger.info('Registering BiometricController with GetX');
       Get.put(BiometricController());
     }
     _biometricController = Get.find<BiometricController>();
 
     // Check authentication requirements
+    _logger.info('Checking authentication requirements');
     _checkAuthRequirements();
   }
 
   Future<void> _checkAuthRequirements() async {
+    _logger.info(
+        'Biometric auth enabled: ${_securityController.biometricAuthEnabled}');
+    _logger.info('PIN code enabled: ${_securityController.pinCodeEnabled}');
+
     // If no authentication is required, skip authentication
     if (!_securityController.biometricAuthEnabled &&
         !_securityController.pinCodeEnabled) {
+      _logger.info('No authentication required, skipping');
       if (mounted) {
         setState(() {
           _isAuthenticated = true;
@@ -61,12 +74,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
       // If biometric authentication is enabled and available, try that first
       if (_securityController.biometricAuthEnabled &&
           _biometricController.isBiometricAvailable) {
+        _logger.info(
+            'Biometric authentication is enabled and available, using it');
         await _authenticateWithBiometrics();
       } else if (_securityController.pinCodeEnabled) {
         // If PIN authentication is enabled, use that
+        _logger.info('PIN authentication is enabled, using it');
         await _authenticateWithPin();
       } else {
         // If no authentication method is available, skip authentication
+        _logger.info('No authentication method available, skipping');
         if (mounted) {
           setState(() {
             _isAuthenticated = true;
@@ -74,8 +91,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
           });
         }
       }
-    } catch (e) {
-      debugPrint('Error during authentication: $e');
+    } catch (e, stackTrace) {
+      _logger.severe('Error during authentication', e, stackTrace);
       if (mounted) {
         setState(() {
           _isAuthenticated = false;
@@ -87,48 +104,58 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   Future<void> _authenticateWithBiometrics() async {
     try {
-      final result = await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BiometricAuthScreen(
-            reason: widget.reason,
-            onSuccess: () {
-              // Use Navigator.pop with a result instead of callbacks
-              Navigator.pop(context, true);
-            },
-            onFailure: () {
-              // Use Navigator.pop with a result instead of callbacks
-              Navigator.pop(context, false);
-            },
+      // Use a try-catch block to handle any navigation errors
+      bool? result;
+
+      try {
+        result = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (context) => BiometricAuthScreen(
+              reason: widget.reason,
+              onSuccess: () {
+                // Use Navigator.pop with a result instead of callbacks
+                Navigator.of(context).pop(true);
+              },
+              onFailure: () {
+                // Use Navigator.pop with a result instead of callbacks
+                Navigator.of(context).pop(false);
+              },
+            ),
           ),
-        ),
-      );
+        );
+      } catch (navError) {
+        debugPrint(
+            'Navigation error during biometric authentication: $navError');
+        // Continue with the flow, but mark as not authenticated
+        result = false;
+      }
+
+      // Check if the widget is still mounted before updating state
+      if (!mounted) return;
 
       // Handle the result after navigation is complete
       if (result == true) {
         // Authentication successful
-        if (mounted) {
-          setState(() {
-            _isAuthenticated = true;
-            _isAuthenticating = false;
-          });
-        }
+        setState(() {
+          _isAuthenticated = true;
+          _isAuthenticating = false;
+        });
       } else {
         // Authentication failed, try PIN if enabled
         if (_securityController.pinCodeEnabled) {
           await _authenticateWithPin();
         } else {
-          if (mounted) {
-            setState(() {
-              _isAuthenticated = false;
-              _isAuthenticating = false;
-            });
-          }
+          setState(() {
+            _isAuthenticated = false;
+            _isAuthenticating = false;
+          });
         }
       }
-    } catch (e) {
-      // Handle any navigation errors
-      debugPrint('Error during biometric authentication: $e');
+    } catch (e, stackTrace) {
+      // Handle any other errors
+      debugPrint('Error during biometric authentication process: $e');
+      debugPrint('Stack trace: $stackTrace');
+
       if (mounted) {
         setState(() {
           _isAuthenticated = false;
@@ -140,34 +167,45 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   Future<void> _authenticateWithPin() async {
     try {
-      final result = await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PinAuthScreen(
-            mode: PinAuthMode.verify,
-            reason: widget.reason,
-            onSuccess: () {
-              // Use Navigator.pop with a result instead of callbacks
-              Navigator.pop(context, true);
-            },
-            onFailure: () {
-              // Use Navigator.pop with a result instead of callbacks
-              Navigator.pop(context, false);
-            },
+      // Use a try-catch block to handle any navigation errors
+      bool? result;
+
+      try {
+        result = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (context) => PinAuthScreen(
+              mode: PinAuthMode.verify,
+              reason: widget.reason,
+              onSuccess: () {
+                // Use Navigator.pop with a result instead of callbacks
+                Navigator.of(context).pop(true);
+              },
+              onFailure: () {
+                // Use Navigator.pop with a result instead of callbacks
+                Navigator.of(context).pop(false);
+              },
+            ),
           ),
-        ),
-      );
+        );
+      } catch (navError) {
+        debugPrint('Navigation error during PIN authentication: $navError');
+        // Continue with the flow, but mark as not authenticated
+        result = false;
+      }
+
+      // Check if the widget is still mounted before updating state
+      if (!mounted) return;
 
       // Handle the result after navigation is complete
-      if (mounted) {
-        setState(() {
-          _isAuthenticated = result == true;
-          _isAuthenticating = false;
-        });
-      }
-    } catch (e) {
-      // Handle any navigation errors
-      debugPrint('Error during PIN authentication: $e');
+      setState(() {
+        _isAuthenticated = result == true;
+        _isAuthenticating = false;
+      });
+    } catch (e, stackTrace) {
+      // Handle any other errors
+      debugPrint('Error during PIN authentication process: $e');
+      debugPrint('Stack trace: $stackTrace');
+
       if (mounted) {
         setState(() {
           _isAuthenticated = false;

@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:findsafe/controllers/biometric_controller.dart';
 import 'package:findsafe/controllers/security_controller.dart';
 import 'package:findsafe/screens/pin_auth.dart';
+import 'package:findsafe/service/websocket.dart';
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
@@ -164,6 +166,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   void _showRemoteLockDialog() {
     final TextEditingController deviceIdController = TextEditingController();
+    final WebSocketService webSocketService = WebSocketService();
+    bool isLoading = false;
 
     showDialog(
       context: context,
@@ -175,78 +179,136 @@ class _SecurityScreenState extends State<SecurityScreen> {
             ? AppTheme.darkTextPrimaryColor
             : AppTheme.textPrimaryColor;
 
-        return AlertDialog(
-          backgroundColor: backgroundColor,
-          title: Text(
-            'Lock Device Remotely',
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.bold,
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: backgroundColor,
+            title: Text(
+              'Lock Device Remotely',
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Enter the device ID you want to lock remotely',
-                style: TextStyle(
-                  color: isDarkMode
-                      ? AppTheme.darkTextSecondaryColor
-                      : AppTheme.textSecondaryColor,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Enter the device ID you want to lock remotely',
+                  style: TextStyle(
+                    color: isDarkMode
+                        ? AppTheme.darkTextSecondaryColor
+                        : AppTheme.textSecondaryColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: deviceIdController,
+                  decoration: const InputDecoration(
+                    labelText: 'Device ID',
+                    prefixIcon: Icon(Iconsax.mobile),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        Navigator.of(context).pop();
+                      },
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: isDarkMode
+                        ? AppTheme.darkTextSecondaryColor
+                        : AppTheme.textSecondaryColor,
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: deviceIdController,
-                decoration: const InputDecoration(
-                  labelText: 'Device ID',
-                  prefixIcon: Icon(Iconsax.mobile),
+              ElevatedButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        if (deviceIdController.text.isEmpty) {
+                          CustomToast.show(
+                            context: context,
+                            message: 'Please enter a device ID',
+                            type: ToastType.warning,
+                            position: ToastPosition.top,
+                          );
+                          return;
+                        }
+
+                        setState(() {
+                          isLoading = true;
+                        });
+
+                        try {
+                          // Connect to WebSocket
+                          await webSocketService.connect();
+
+                          // Send lock command
+                          final command = jsonEncode({
+                            'deviceId': deviceIdController.text.trim(),
+                            'command': 'lock_device',
+                          });
+
+                          webSocketService.sendCommand(command);
+
+                          Navigator.of(context).pop();
+
+                          // Show success message
+                          CustomToast.show(
+                            context: context,
+                            message: 'Lock command sent successfully',
+                            type: ToastType.success,
+                            position: ToastPosition.top,
+                          );
+                        } catch (e) {
+                          CustomToast.show(
+                            context: context,
+                            message:
+                                'Failed to send lock command: ${e.toString()}',
+                            type: ToastType.error,
+                            position: ToastPosition.top,
+                          );
+                        } finally {
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDarkMode
+                      ? AppTheme.darkPrimaryColor
+                      : AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
                 ),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Lock Device'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: isDarkMode
-                      ? AppTheme.darkTextSecondaryColor
-                      : AppTheme.textSecondaryColor,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-
-                // Show success message
-                CustomToast.show(
-                  context: context,
-                  message: 'Remote lock functionality coming soon!',
-                  type: ToastType.info,
-                  position: ToastPosition.top,
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isDarkMode
-                    ? AppTheme.darkPrimaryColor
-                    : AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Lock Device'),
-            ),
-          ],
-        );
+          );
+        });
       },
     );
   }
 
   void _showDataWipeDialog() {
     final TextEditingController deviceIdController = TextEditingController();
+    final TextEditingController confirmationController =
+        TextEditingController();
+    final WebSocketService webSocketService = WebSocketService();
+    bool isLoading = false;
 
     showDialog(
       context: context,
@@ -258,78 +320,182 @@ class _SecurityScreenState extends State<SecurityScreen> {
             ? AppTheme.darkTextPrimaryColor
             : AppTheme.textPrimaryColor;
 
-        return AlertDialog(
-          backgroundColor: backgroundColor,
-          title: Text(
-            'Remote Data Wipe',
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.bold,
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: backgroundColor,
+            title: Text(
+              'Remote Data Wipe',
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'This will erase all data on the device. This action cannot be undone.',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'This will erase all data on the device. This action cannot be undone.',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Enter the device ID to confirm',
+                  style: TextStyle(
+                    color: isDarkMode
+                        ? AppTheme.darkTextSecondaryColor
+                        : AppTheme.textSecondaryColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: deviceIdController,
+                  decoration: const InputDecoration(
+                    labelText: 'Device ID',
+                    prefixIcon: Icon(Iconsax.mobile),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: confirmationController,
+                  decoration: const InputDecoration(
+                    labelText: 'Type "CONFIRM" to proceed',
+                    prefixIcon: Icon(Iconsax.warning_2),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        Navigator.of(context).pop();
+                      },
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: isDarkMode
+                        ? AppTheme.darkTextSecondaryColor
+                        : AppTheme.textSecondaryColor,
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Enter the device ID to confirm',
-                style: TextStyle(
-                  color: isDarkMode
-                      ? AppTheme.darkTextSecondaryColor
-                      : AppTheme.textSecondaryColor,
+              ElevatedButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        // Validate inputs
+                        if (deviceIdController.text.isEmpty) {
+                          CustomToast.show(
+                            context: context,
+                            message: 'Please enter a device ID',
+                            type: ToastType.warning,
+                            position: ToastPosition.top,
+                          );
+                          return;
+                        }
+
+                        if (confirmationController.text != 'CONFIRM') {
+                          CustomToast.show(
+                            context: context,
+                            message: 'Please type "CONFIRM" to proceed',
+                            type: ToastType.warning,
+                            position: ToastPosition.top,
+                          );
+                          return;
+                        }
+
+                        // Show a final confirmation dialog
+                        final bool confirmWipe = await showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Final Confirmation'),
+                                content: const Text(
+                                  'Are you absolutely sure you want to wipe all data from this device? This action cannot be undone.',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: const Text('Yes, Wipe Data'),
+                                  ),
+                                ],
+                              ),
+                            ) ??
+                            false;
+
+                        if (!confirmWipe) return;
+
+                        setState(() {
+                          isLoading = true;
+                        });
+
+                        try {
+                          // Connect to WebSocket
+                          await webSocketService.connect();
+
+                          // Send wipe command
+                          final command = jsonEncode({
+                            'deviceId': deviceIdController.text.trim(),
+                            'command': 'wipe_data',
+                          });
+
+                          webSocketService.sendCommand(command);
+
+                          Navigator.of(context).pop();
+
+                          // Show success message
+                          CustomToast.show(
+                            context: context,
+                            message: 'Data wipe command sent successfully',
+                            type: ToastType.success,
+                            position: ToastPosition.top,
+                          );
+                        } catch (e) {
+                          CustomToast.show(
+                            context: context,
+                            message:
+                                'Failed to send data wipe command: ${e.toString()}',
+                            type: ToastType.error,
+                            position: ToastPosition.top,
+                          );
+                        } finally {
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: deviceIdController,
-                decoration: const InputDecoration(
-                  labelText: 'Device ID',
-                  prefixIcon: Icon(Iconsax.mobile),
-                ),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Wipe Data'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: isDarkMode
-                      ? AppTheme.darkTextSecondaryColor
-                      : AppTheme.textSecondaryColor,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-
-                // Show success message
-                CustomToast.show(
-                  context: context,
-                  message: 'Remote data wipe functionality coming soon!',
-                  type: ToastType.info,
-                  position: ToastPosition.top,
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Wipe Data'),
-            ),
-          ],
-        );
+          );
+        });
       },
     );
   }

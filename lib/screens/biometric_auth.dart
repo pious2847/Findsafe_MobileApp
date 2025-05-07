@@ -1,5 +1,6 @@
 import 'package:findsafe/controllers/biometric_controller.dart';
 import 'package:findsafe/theme/app_theme.dart';
+import 'package:findsafe/utilities/logger.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
 import 'package:findsafe/widgets/custom_buttons.dart';
 import 'package:flutter/material.dart';
@@ -26,14 +27,17 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
     with SingleTickerProviderStateMixin {
   late BiometricController _biometricController;
   late AnimationController _animationController;
+  final _logger = AppLogger.getLogger('BiometricAuthScreen');
   bool _isAuthenticating = false;
   bool _authFailed = false;
 
   @override
   void initState() {
     super.initState();
+    _logger.info('Initializing BiometricAuthScreen');
 
     // Initialize animation controller
+    _logger.info('Setting up animation controller');
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -41,12 +45,15 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
     _animationController.repeat(reverse: true);
 
     // Initialize biometric controller
+    _logger.info('Setting up biometric controller');
     if (!Get.isRegistered<BiometricController>()) {
+      _logger.info('Registering BiometricController with GetX');
       Get.put(BiometricController());
     }
     _biometricController = Get.find<BiometricController>();
 
     // Start authentication after the screen is built
+    _logger.info('Scheduling authentication after frame');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _authenticate();
     });
@@ -54,6 +61,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
 
   @override
   void dispose() {
+    _logger.info('Disposing BiometricAuthScreen');
     _animationController.dispose();
     super.dispose();
   }
@@ -61,34 +69,60 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
   Future<void> _authenticate() async {
     if (!mounted) return;
 
+    _logger
+        .info('Starting authentication process with reason: ${widget.reason}');
+
     setState(() {
       _isAuthenticating = true;
       _authFailed = false;
     });
 
     try {
-      final authenticated = await _biometricController.authenticate(
-        reason: widget.reason,
-        context: context,
-      );
+      // Use a try-catch block to handle any authentication errors
+      bool authenticated = false;
 
-      if (!mounted) return;
+      try {
+        _logger.info('Calling biometric controller authenticate method');
+        authenticated = await _biometricController.authenticate(
+          reason: widget.reason,
+          context: context,
+        );
+      } catch (authError, authStackTrace) {
+        _logger.severe('Authentication error', authError, authStackTrace);
+        // Continue with the flow, but mark as not authenticated
+        authenticated = false;
+      }
 
+      // Check if the widget is still mounted before updating state
+      if (!mounted) {
+        _logger.info('Widget no longer mounted after authentication');
+        return;
+      }
+
+      _logger.info('Authentication result: $authenticated');
       setState(() {
         _isAuthenticating = false;
         _authFailed = !authenticated;
       });
 
       if (authenticated) {
-        // Add a small delay to prevent navigation conflicts
-        await Future.delayed(const Duration(milliseconds: 100));
-        if (mounted) {
-          widget.onSuccess();
-          // The onSuccess callback is required by the constructor, so we don't need to check for null
-        }
+        _logger.info('Authentication successful, preparing to call onSuccess');
+        // Use a microtask to ensure the state update is complete before navigation
+        Future.microtask(() {
+          if (mounted) {
+            _logger.info('Calling onSuccess callback');
+            widget.onSuccess();
+          } else {
+            _logger.warning('Widget no longer mounted, cannot call onSuccess');
+          }
+        });
+      } else {
+        _logger.info('Authentication failed');
       }
-    } catch (e) {
-      debugPrint('Error during biometric authentication: $e');
+    } catch (e, stackTrace) {
+      _logger.severe(
+          'Error during biometric authentication process', e, stackTrace);
+
       if (mounted) {
         setState(() {
           _isAuthenticating = false;
@@ -194,8 +228,8 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
                       text: 'Cancel',
                       icon: Iconsax.close_circle,
                       onPressed: () {
-                        // Add a small delay to prevent navigation conflicts
-                        Future.delayed(const Duration(milliseconds: 100), () {
+                        // Use microtask to ensure UI updates are complete before navigation
+                        Future.microtask(() {
                           if (mounted) {
                             widget.onFailure();
                           }
