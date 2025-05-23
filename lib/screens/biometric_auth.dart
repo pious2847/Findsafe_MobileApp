@@ -100,24 +100,30 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
       }
 
       _logger.info('Authentication result: $authenticated');
-      setState(() {
-        _isAuthenticating = false;
-        _authFailed = !authenticated;
-      });
 
       if (authenticated) {
-        _logger.info('Authentication successful, preparing to call onSuccess');
-        // Use a microtask to ensure the state update is complete before navigation
+        _logger.info('Authentication successful');
+
+        // First update the state to show success
+        setState(() {
+          _isAuthenticating = false;
+          _authFailed = false;
+        });
+
+        // Use the callback instead of Navigator.pop to avoid navigation conflicts
+        // This is safer as it lets the parent widget handle the navigation
+        // Use a microtask to ensure we're not in the middle of a build
         Future.microtask(() {
           if (mounted) {
-            _logger.info('Calling onSuccess callback');
             widget.onSuccess();
-          } else {
-            _logger.warning('Widget no longer mounted, cannot call onSuccess');
           }
         });
       } else {
         _logger.info('Authentication failed');
+        setState(() {
+          _isAuthenticating = false;
+          _authFailed = true;
+        });
       }
     } catch (e, stackTrace) {
       _logger.severe(
@@ -228,7 +234,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
                       text: 'Cancel',
                       icon: Iconsax.close_circle,
                       onPressed: () {
-                        // Use microtask to ensure UI updates are complete before navigation
+                        // Use the callback instead of Navigator.pop to avoid navigation conflicts
                         Future.microtask(() {
                           if (mounted) {
                             widget.onFailure();

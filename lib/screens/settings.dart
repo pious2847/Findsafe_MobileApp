@@ -3,11 +3,11 @@ import 'package:findsafe/controllers/notification_controller.dart';
 import 'package:findsafe/controllers/privacy_controller.dart';
 import 'package:findsafe/controllers/security_controller.dart';
 import 'package:findsafe/controllers/theme_controller.dart';
+import 'package:findsafe/screens/about.dart';
 import 'package:findsafe/screens/notification_settings.dart';
-import 'package:findsafe/screens/security.dart';
+import 'package:findsafe/screens/security_wrapper.dart';
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
-import 'package:findsafe/widgets/auth_wrapper.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
 import 'package:findsafe/widgets/language_selector.dart';
 import 'package:findsafe/widgets/premium_card.dart';
@@ -231,11 +231,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const AuthWrapper(
-                          reason:
-                              'Authentication required to access security settings',
-                          child: SecurityScreen(),
-                        ),
+                        builder: (context) => const SecurityWrapperScreen(),
                       ),
                     );
                   },
@@ -329,6 +325,7 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 SettingsItem(
                   title: 'Privacy Policy',
+                  subtitle: 'Read our privacy policy',
                   icon: Iconsax.shield_tick,
                   onTap: () {
                     _launchURL('https://findsafe.com/privacy-policy');
@@ -336,6 +333,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 SettingsItem(
                   title: 'Terms of Service',
+                  subtitle: 'Read our terms of service',
                   icon: Iconsax.document_text,
                   onTap: () {
                     _launchURL('https://findsafe.com/terms-of-service');
@@ -343,6 +341,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 SettingsItem(
                   title: 'Rate Us',
+                  subtitle: 'Share your feedback on the app store',
                   icon: Iconsax.star,
                   onTap: () {
                     // Open app store rating
@@ -354,25 +353,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 SettingsItem(
                   title: 'About FindSafe',
+                  subtitle: 'Learn more about the app and its features',
                   icon: Iconsax.info_circle,
                   onTap: () {
-                    showAboutDialog(
-                      context: context,
-                      applicationName: 'FindSafe',
-                      applicationVersion: '1.0.0',
-                      applicationIcon: Image.asset(
-                        'assets/images/logo.png',
-                        width: 50,
-                        height: 50,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AboutScreen(),
                       ),
-                      applicationLegalese:
-                          '© 2023 FindSafe. All rights reserved.',
-                      children: [
-                        const SizedBox(height: 16),
-                        const Text(
-                          'FindSafe is a device tracking application that helps you keep track of your devices and loved ones.',
-                        ),
-                      ],
                     );
                   },
                 ),

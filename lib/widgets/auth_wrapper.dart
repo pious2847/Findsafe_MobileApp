@@ -72,72 +72,57 @@ class _AuthWrapperState extends State<AuthWrapper> {
       return;
     }
 
-    try {
-      // If biometric authentication is enabled and available, try that first
-      if (_securityController.biometricAuthEnabled &&
-          _biometricController.isBiometricAvailable) {
-        _logger.info(
-            'Biometric authentication is enabled and available, using it');
-        await _authenticateWithBiometrics();
-      } else if (_securityController.pinCodeEnabled) {
-        // If PIN authentication is enabled, use that
-        _logger.info('PIN authentication is enabled, using it');
-        await _authenticateWithPin();
-      } else {
-        // If no authentication method is available, skip authentication
-        _logger.info('No authentication method available, skipping');
+    // Use a microtask to ensure we're not in the middle of a build
+    await Future.microtask(() async {
+      if (!mounted) return;
+
+      try {
+        // If biometric authentication is enabled and available, try that first
+        if (_securityController.biometricAuthEnabled &&
+            _biometricController.isBiometricAvailable) {
+          _logger.info(
+              'Biometric authentication is enabled and available, using it');
+          await _authenticateWithBiometrics();
+        } else if (_securityController.pinCodeEnabled) {
+          // If PIN authentication is enabled, use that
+          _logger.info('PIN authentication is enabled, using it');
+          await _authenticateWithPin();
+        } else {
+          // If no authentication method is available, skip authentication
+          _logger.info('No authentication method available, skipping');
+          if (mounted) {
+            setState(() {
+              _isAuthenticated = true;
+              _isAuthenticating = false;
+            });
+          }
+        }
+      } catch (e, stackTrace) {
+        _logger.severe('Error during authentication', e, stackTrace);
         if (mounted) {
           setState(() {
-            _isAuthenticated = true;
+            _isAuthenticated = false;
             _isAuthenticating = false;
           });
         }
       }
-    } catch (e, stackTrace) {
-      _logger.severe('Error during authentication', e, stackTrace);
-      if (mounted) {
-        setState(() {
-          _isAuthenticated = false;
-          _isAuthenticating = false;
-        });
-      }
-    }
+    });
   }
 
   Future<void> _authenticateWithBiometrics() async {
     try {
-      // Use a try-catch block to handle any navigation errors
-      bool? result;
+      setState(() {
+        _isAuthenticating = true;
+      });
 
-      try {
-        result = await Navigator.of(context).push<bool>(
-          MaterialPageRoute(
-            builder: (context) => BiometricAuthScreen(
-              reason: widget.reason,
-              onSuccess: () {
-                // Use Navigator.pop with a result instead of callbacks
-                Navigator.of(context).pop(true);
-              },
-              onFailure: () {
-                // Use Navigator.pop with a result instead of callbacks
-                Navigator.of(context).pop(false);
-              },
-            ),
-          ),
-        );
-      } catch (navError) {
-        debugPrint(
-            'Navigation error during biometric authentication: $navError');
-        // Continue with the flow, but mark as not authenticated
-        result = false;
-      }
+      // Use a safer approach to avoid navigation conflicts
+      // Instead of awaiting the navigation result directly, we'll use callbacks
+      // to handle the authentication result
 
-      // Check if the widget is still mounted before updating state
-      if (!mounted) return;
+      // Define success and failure callbacks
+      void onAuthSuccess() {
+        if (!mounted) return;
 
-      // Handle the result after navigation is complete
-      if (result == true) {
-        // Authentication successful
         setState(() {
           _isAuthenticated = true;
           _isAuthenticating = false;
@@ -147,10 +132,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
         if (widget.onAuthenticationComplete != null) {
           widget.onAuthenticationComplete!();
         }
-      } else {
+      }
+
+      void onAuthFailure() {
+        if (!mounted) return;
+
         // Authentication failed, try PIN if enabled
         if (_securityController.pinCodeEnabled) {
-          await _authenticateWithPin();
+          _authenticateWithPin();
         } else {
           setState(() {
             _isAuthenticated = false;
@@ -158,10 +147,33 @@ class _AuthWrapperState extends State<AuthWrapper> {
           });
         }
       }
+
+      // Use a microtask to ensure we're not in the middle of a build
+      await Future.microtask(() async {
+        if (!mounted) return;
+
+        try {
+          // Navigate to the BiometricAuthScreen
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => BiometricAuthScreen(
+                reason: widget.reason,
+                onSuccess: onAuthSuccess,
+                onFailure: onAuthFailure,
+              ),
+            ),
+          );
+        } catch (navError) {
+          _logger.severe(
+              'Navigation error during biometric authentication', navError);
+          // If navigation fails, treat it as authentication failure
+          onAuthFailure();
+        }
+      });
     } catch (e, stackTrace) {
       // Handle any other errors
-      debugPrint('Error during biometric authentication process: $e');
-      debugPrint('Stack trace: $stackTrace');
+      _logger.severe(
+          'Error during biometric authentication process', e, stackTrace);
 
       if (mounted) {
         setState(() {

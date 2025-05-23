@@ -382,7 +382,7 @@ class AuthProvider {
             message: successMessage,
             type: ToastType.success,
             position: ToastPosition.top);
-          
+
         // Return the resetToken for password reset
         return {
           'token': response.data['resetToken'].toString(),
@@ -664,5 +664,40 @@ class AuthProvider {
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
+  }
+
+  // Fetch user data without requiring a BuildContext
+  // This is useful for background operations or services
+  Future<dynamic> fetchUserWithoutContext(String userId) async {
+    try {
+      final dio = Dio();
+      final url = '$APIURL/get-user/$userId';
+
+      // Send GET request to fetch user data
+      final response = await dio.get(
+        url,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+        ),
+      );
+
+      // Check if the response is successful
+      if (response.statusCode == 200) {
+        _logger.info("Success Retrieve User data: ${response.data['User']}");
+
+        final userJson = response.data['User']; // Access the 'User' key
+        var user = UserProfileModel.fromJson(userJson);
+        return user;
+      } else {
+        _logger.warning('Failed to load user data: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      // Log error but don't show UI toast since we don't have context
+      _logger.severe('Error fetching user without context', e);
+      return null; // Return null if an error occurs
+    }
   }
 }

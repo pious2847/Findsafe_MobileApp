@@ -507,7 +507,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Security',
-        showBackButton: false,
+        showBackButton: true,
         onBackPressed: () {
           // Navigate back to the Settings tab
           Get.back();

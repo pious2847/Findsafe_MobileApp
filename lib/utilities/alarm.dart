@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:findsafe/service/auth.dart';
 import 'package:findsafe/utilities/logger.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -331,6 +331,8 @@ class AlarmService {
       importance: Importance.max,
       priority: Priority.high,
       ticker: 'ticker',
+      styleInformation:
+          BigTextStyleInformation(''), // Allow for longer text in notification
     );
 
     // iOS notification details
@@ -349,10 +351,49 @@ class AlarmService {
     );
 
     try {
+      // Get the user's emergency contact information
+      String notificationBody =
+          'This device has been locked remotely for security';
+
+      // Try to fetch user data to get emergency contact
+      try {
+        final authProvider = AuthProvider();
+        final userData = await authProvider.getUserDataFromLocalStorage();
+        final userId = userData['userId'];
+
+        if (userId != null) {
+          // Fetch user profile to get emergency contact without context
+          // We're using a direct API call without UI context
+          final userProfile =
+              await authProvider.fetchUserWithoutContext(userId);
+
+          if (userProfile != null &&
+              userProfile.emergencyContact != null &&
+              userProfile.emergencyContact!.name != null &&
+              userProfile.emergencyContact!.name!.isNotEmpty &&
+              userProfile.emergencyContact!.phone != null &&
+              userProfile.emergencyContact!.phone!.isNotEmpty) {
+            // Add emergency contact information to the notification
+            notificationBody +=
+                '\n\nIf found, please contact: ${userProfile.emergencyContact!.name} at ${userProfile.emergencyContact!.phone}';
+
+            // Add relationship if available
+            if (userProfile.emergencyContact!.relationship != null &&
+                userProfile.emergencyContact!.relationship!.isNotEmpty) {
+              notificationBody +=
+                  ' (${userProfile.emergencyContact!.relationship})';
+            }
+          }
+        }
+      } catch (e) {
+        _logger.warning('Failed to fetch emergency contact info: $e');
+        // Continue with the basic notification if fetching emergency contact fails
+      }
+
       await flutterLocalNotificationsPlugin.show(
         1,
         'FindSafe Security Alert',
-        'This device has been locked remotely for security',
+        notificationBody,
         platformChannelSpecifics,
         payload: 'lock_notification',
       );
