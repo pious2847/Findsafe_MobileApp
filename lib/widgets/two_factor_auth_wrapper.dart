@@ -41,6 +41,7 @@ class _TwoFactorAuthWrapperState extends State<TwoFactorAuthWrapper> {
     _logger.info('Checking if 2FA is enabled');
     
     // If 2FA is not enabled, skip authentication
+    _logger.info('2FA enabled: ${_securityController.twoFactorAuthEnabled}');
     if (!_securityController.twoFactorAuthEnabled) {
       _logger.info('2FA is not enabled, skipping authentication');
       setState(() {

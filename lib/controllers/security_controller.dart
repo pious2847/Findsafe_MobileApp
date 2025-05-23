@@ -62,6 +62,7 @@ class SecurityController extends GetxController {
     _twoFactorAuthEnabled.value = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_twoFactorAuthKey, value);
+
     return true;
   }
 }
