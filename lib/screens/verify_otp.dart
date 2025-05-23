@@ -49,22 +49,26 @@ class VerifyOtpState extends State<VerifyOtp> {
 
   void _startResendTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_resendTime > 0) {
-          _resendTime--;
-        } else {
-          _canResend = true;
-          _timer?.cancel();
-        }
-      });
+      if (mounted) {
+        setState(() {
+          if (_resendTime > 0) {
+            _resendTime--;
+          } else {
+            _canResend = true;
+            _timer?.cancel();
+          }
+        });
+      }
     });
   }
 
   Future<void> _verifyOtp() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+        });
+      }
 
       try {
         final result = await _authProvider.verifyResetOtp(
@@ -72,6 +76,8 @@ class VerifyOtpState extends State<VerifyOtp> {
           widget.email,
           _otpController.text,
         );
+
+        if (!mounted) return;
 
         // Navigate to reset password screen with the token
         final token = result['token'] as String?;
@@ -89,16 +95,20 @@ class VerifyOtpState extends State<VerifyOtp> {
           );
         }
       } catch (e) {
-        CustomToast.show(
-          context: context,
-          message: 'Verification failed: ${e.toString()}',
-          type: ToastType.error,
-          position: ToastPosition.top,
-        );
+        if (mounted) {
+          CustomToast.show(
+            context: context,
+            message: 'Verification failed: ${e.toString()}',
+            type: ToastType.error,
+            position: ToastPosition.top,
+          );
+        }
       } finally {
-        setState(() {
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -106,13 +116,17 @@ class VerifyOtpState extends State<VerifyOtp> {
   Future<void> _resendOtp() async {
     if (!_canResend) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       // Call the resend OTP endpoint
       await _authProvider.sendPasswordResetEmail(context, widget.email);
+
+      if (!mounted) return;
 
       // Reset the timer
       setState(() {
@@ -128,16 +142,20 @@ class VerifyOtpState extends State<VerifyOtp> {
         position: ToastPosition.top,
       );
     } catch (e) {
-      CustomToast.show(
-        context: context,
-        message: 'Failed to resend verification code',
-        type: ToastType.error,
-        position: ToastPosition.top,
-      );
+      if (mounted) {
+        CustomToast.show(
+          context: context,
+          message: 'Failed to resend verification code',
+          type: ToastType.error,
+          position: ToastPosition.top,
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

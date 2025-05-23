@@ -580,17 +580,22 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       value: _securityController.twoFactorAuthEnabled,
                       onChanged: (value) {
                         if (value) {
-                          // In a real app, we would guide the user through 2FA setup
-                          _securityController.toggleTwoFactorAuth(value);
-
-                          CustomToast.show(
-                            context: context,
-                            message: 'Two-factor authentication enabled',
-                            type: ToastType.success,
-                            position: ToastPosition.top,
-                          );
+                          // Check if either PIN or biometric is enabled
+                          _securityController
+                              .toggleTwoFactorAuth(value, context)
+                              .then((success) {
+                            if (success) {
+                              CustomToast.show(
+                                context: context,
+                                message: 'Two-factor authentication enabled',
+                                type: ToastType.success,
+                                position: ToastPosition.top,
+                              );
+                            }
+                          });
                         } else {
-                          _securityController.toggleTwoFactorAuth(value);
+                          _securityController.toggleTwoFactorAuth(
+                              value, context);
                         }
                       },
                     )),

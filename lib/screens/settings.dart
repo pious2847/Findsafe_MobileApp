@@ -6,6 +6,7 @@ import 'package:findsafe/controllers/theme_controller.dart';
 import 'package:findsafe/screens/notification_settings.dart';
 import 'package:findsafe/screens/security.dart';
 import 'package:findsafe/theme/app_theme.dart';
+import 'package:findsafe/utilities/toast_messages.dart';
 import 'package:findsafe/widgets/auth_wrapper.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
 import 'package:findsafe/widgets/language_selector.dart';
@@ -255,6 +256,33 @@ class _SettingsPageState extends State<SettingsPage> {
                       value: _securityController.pinCodeEnabled,
                       onChanged: (value) {
                         _securityController.togglePinCode(value);
+                      },
+                    )),
+                Obx(() => SettingsSwitch(
+                      title: 'Two-Factor Authentication',
+                      subtitle:
+                          'Add an extra layer of security to your account',
+                      icon: Iconsax.security_safe,
+                      value: _securityController.twoFactorAuthEnabled,
+                      onChanged: (value) {
+                        if (value) {
+                          // Check if either PIN or biometric is enabled
+                          _securityController
+                              .toggleTwoFactorAuth(value, context)
+                              .then((success) {
+                            if (success) {
+                              CustomToast.show(
+                                context: context,
+                                message: 'Two-factor authentication enabled',
+                                type: ToastType.success,
+                                position: ToastPosition.top,
+                              );
+                            }
+                          });
+                        } else {
+                          _securityController.toggleTwoFactorAuth(
+                              value, context);
+                        }
                       },
                     )),
               ],

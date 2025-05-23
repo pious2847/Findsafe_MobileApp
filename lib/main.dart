@@ -3,6 +3,7 @@ import 'package:findsafe/screens/splashscreen.dart';
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/background_worker_simple.dart';
 import 'package:findsafe/utilities/logger.dart';
+import 'package:findsafe/widgets/two_factor_auth_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -51,7 +52,9 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeController.themeMode,
-      home: const SplashScreen(),
+      home: const TwoFactorAuthWrapper(
+        child: SplashScreen(),
+      ),
       defaultTransition: Transition.fade,
     );
   }

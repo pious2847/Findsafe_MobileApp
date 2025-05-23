@@ -58,6 +58,8 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
   }
 
   Future<void> _loadPin() async {
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
     });
@@ -65,23 +67,36 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
     try {
       _currentPin = await _secureStorage.read(key: _pinKey) ?? '';
 
+      if (!mounted) return;
+
       if (_currentPin.isEmpty && widget.mode == PinAuthMode.verify) {
         // No PIN set, consider it a success for verification mode
-        if (widget.onSuccess != null) {
-          widget.onSuccess!();
-        }
+        // Add a small delay to prevent navigation conflicts
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        if (!mounted) return;
+
+        // Always use Navigator.pop with result for consistency
+        Navigator.pop(context, true);
       }
     } catch (e) {
       debugPrint('Error loading PIN: $e');
+
+      if (!mounted) return;
+
       _setError('Failed to load PIN');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _savePin(String pin) async {
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
     });
@@ -89,36 +104,36 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
     try {
       await _secureStorage.write(key: _pinKey, value: pin);
 
-      if (mounted) {
-        CustomToast.show(
-          context: context,
-          message: 'PIN set successfully',
-          type: ToastType.success,
-          position: ToastPosition.top,
-        );
-      }
+      if (!mounted) return;
+
+      CustomToast.show(
+        context: context,
+        message: 'PIN set successfully',
+        type: ToastType.success,
+        position: ToastPosition.top,
+      );
 
       // Add a small delay to prevent navigation conflicts
       await Future.delayed(const Duration(milliseconds: 100));
-      if (mounted) {
-        if (widget.onSuccess != null) {
-          widget.onSuccess!();
-        } else {
-          // Use the new navigation approach if no callback is provided
-          Navigator.pop(context, true);
-        }
-      }
+
+      if (!mounted) return;
+
+      // Always use Navigator.pop with result for consistency
+      Navigator.pop(context, true);
     } catch (e) {
       debugPrint('Error saving PIN: $e');
+
+      if (!mounted) return;
+
       _setError('Failed to save PIN');
 
-      // Add a small delay to prevent navigation conflicts
-      await Future.delayed(const Duration(milliseconds: 100));
-      if (mounted) {
-        if (widget.onFailure != null) {
-          widget.onFailure!();
-        } else {
-          // Use the new navigation approach if no callback is provided
+      // Don't navigate away on failure, let the user try again
+      // Only pop with false if explicitly requested to fail
+      if (widget.onFailure != null) {
+        // Add a small delay to prevent navigation conflicts
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        if (mounted) {
           Navigator.pop(context, false);
         }
       }
@@ -168,8 +183,11 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
               widget.mode == PinAuthMode.change) {
             _currentStep = 1;
           } else {
-            // Verify PIN
-            _verifyPin();
+            // Use a safer approach to avoid build phase conflicts
+            // Exit the setState call before calling async method
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _verifyPin();
+            });
           }
         }
       } else if (_currentStep == 1) {
@@ -183,7 +201,11 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
 
         // Check if confirmation PIN is complete
         if (!_confirmPin.contains('')) {
-          _verifyConfirmPin();
+          // Use a safer approach to avoid build phase conflicts
+          // Exit the setState call before calling async method
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _verifyConfirmPin();
+          });
         }
       } else if (_currentStep == 2) {
         // Enter old PIN (for change mode)
@@ -196,7 +218,11 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
 
         // Check if old PIN is complete
         if (!_pin.contains('')) {
-          _verifyOldPin();
+          // Use a safer approach to avoid build phase conflicts
+          // Exit the setState call before calling async method
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _verifyOldPin();
+          });
         }
       }
     });
@@ -251,30 +277,26 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
 
     if (enteredPin == _currentPin) {
       // PIN is correct
+      _setError('');
+
       // Add a small delay to prevent navigation conflicts
       await Future.delayed(const Duration(milliseconds: 100));
+
       if (mounted) {
-        if (widget.onSuccess != null) {
-          widget.onSuccess!();
-        } else {
-          // Use the new navigation approach if no callback is provided
-          Navigator.pop(context, true);
-        }
+        // Always use Navigator.pop with result for consistency
+        Navigator.pop(context, true);
       }
     } else {
       // PIN is incorrect
       _setError('Incorrect PIN');
       _resetPin();
 
-      // Add a small delay to prevent navigation conflicts
-      await Future.delayed(const Duration(milliseconds: 100));
-      if (mounted) {
-        if (widget.onFailure != null) {
-          widget.onFailure!();
-        } else {
-          // Use the new navigation approach if no callback is provided
-          Navigator.pop(context, false);
-        }
+      // Don't navigate away on failure, let the user try again
+      // Only pop with false if explicitly requested to fail
+      if (widget.onFailure != null && mounted) {
+        // Add a small delay to prevent navigation conflicts
+        await Future.delayed(const Duration(milliseconds: 100));
+        Navigator.pop(context, false);
       }
     }
   }
@@ -297,16 +319,22 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
     }
   }
 
-  void _verifyConfirmPin() {
+  Future<void> _verifyConfirmPin() async {
+    if (!mounted) return;
+
     final pin = _pin.join();
     final confirmPin = _confirmPin.join();
 
     if (pin == confirmPin) {
       // PINs match, save the PIN
-      _savePin(pin);
+      await _savePin(pin);
     } else {
       // PINs don't match
       _setError('PINs do not match');
+
+      // Add a small delay before resetting
+      await Future.delayed(const Duration(milliseconds: 50));
+
       if (mounted) {
         setState(() {
           _currentStep = 0;

@@ -9,11 +9,13 @@ import 'package:get/get.dart';
 class AuthWrapper extends StatefulWidget {
   final Widget child;
   final String reason;
+  final VoidCallback? onAuthenticationComplete;
 
   const AuthWrapper({
     super.key,
     required this.child,
     required this.reason,
+    this.onAuthenticationComplete,
   });
 
   @override
@@ -140,6 +142,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
           _isAuthenticated = true;
           _isAuthenticating = false;
         });
+
+        // Call the callback if provided
+        if (widget.onAuthenticationComplete != null) {
+          widget.onAuthenticationComplete!();
+        }
       } else {
         // Authentication failed, try PIN if enabled
         if (_securityController.pinCodeEnabled) {
@@ -166,40 +173,58 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   Future<void> _authenticateWithPin() async {
+    if (!mounted) return;
+
     try {
-      // Use a try-catch block to handle any navigation errors
-      bool? result;
-
-      try {
-        result = await Navigator.of(context).push<bool>(
-          MaterialPageRoute(
-            builder: (context) => PinAuthScreen(
-              mode: PinAuthMode.verify,
-              reason: widget.reason,
-              onSuccess: () {
-                // Use Navigator.pop with a result instead of callbacks
-                Navigator.of(context).pop(true);
-              },
-              onFailure: () {
-                // Use Navigator.pop with a result instead of callbacks
-                Navigator.of(context).pop(false);
-              },
-            ),
-          ),
-        );
-      } catch (navError) {
-        debugPrint('Navigation error during PIN authentication: $navError');
-        // Continue with the flow, but mark as not authenticated
-        result = false;
-      }
-
-      // Check if the widget is still mounted before updating state
-      if (!mounted) return;
-
-      // Handle the result after navigation is complete
       setState(() {
-        _isAuthenticated = result == true;
-        _isAuthenticating = false;
+        _isAuthenticating = true;
+      });
+
+      // Use a safer approach with Future.microtask to avoid build phase conflicts
+      await Future.microtask(() async {
+        try {
+          // Delay navigation slightly to avoid build phase conflicts
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          if (!mounted) return;
+
+          // Use a simpler approach without callbacks
+          final result = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PinAuthScreen(
+                mode: PinAuthMode.verify,
+                reason: widget.reason,
+                // No callbacks - rely on Navigator.pop with result
+              ),
+            ),
+          );
+
+          // Check if the widget is still mounted before updating state
+          if (!mounted) return;
+
+          // Handle the result after navigation is complete
+          setState(() {
+            _isAuthenticated = result == true;
+            _isAuthenticating = false;
+          });
+
+          // Call the callback if authentication was successful and callback is provided
+          if (result == true && widget.onAuthenticationComplete != null) {
+            widget.onAuthenticationComplete!();
+          }
+        } catch (navError) {
+          debugPrint('Navigation error during PIN authentication: $navError');
+
+          // Check if the widget is still mounted before updating state
+          if (!mounted) return;
+
+          // Continue with the flow, but mark as not authenticated
+          setState(() {
+            _isAuthenticated = false;
+            _isAuthenticating = false;
+          });
+        }
       });
     } catch (e, stackTrace) {
       // Handle any other errors

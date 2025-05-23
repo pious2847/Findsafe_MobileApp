@@ -36,23 +36,27 @@ class _ProfilePageState extends State<ProfilePage> {
   String? avatarUrl;
 
   Future<void> _fetchUserProfile({bool refresh = false}) async {
-    setState(() {
-      if (refresh) {
-        isRefreshing = true;
-      } else {
-        isLoading = true;
-      }
-      error = null;
-    });
+    if (mounted) {
+      setState(() {
+        if (refresh) {
+          isRefreshing = true;
+        } else {
+          isLoading = true;
+        }
+        error = null;
+      });
+    }
 
     try {
       final response = await _authProvider.fetchUser(context);
       if (response == null) {
-        setState(() {
-          error = 'Failed to load profile. Please try again.';
-          isLoading = false;
-          isRefreshing = false;
-        });
+        if (mounted) {
+          setState(() {
+            error = 'Failed to load profile. Please try again.';
+            isLoading = false;
+            isRefreshing = false;
+          });
+        }
         return;
       }
 
@@ -81,17 +85,21 @@ class _ProfilePageState extends State<ProfilePage> {
         }
       }
 
-      setState(() {
-        user = response;
-        isLoading = false;
-        isRefreshing = false;
-      });
+      if (mounted) {
+        setState(() {
+          user = response;
+          isLoading = false;
+          isRefreshing = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        error = 'Failed to load profile. Please try again.';
-        isLoading = false;
-        isRefreshing = false;
-      });
+      if (mounted) {
+        setState(() {
+          error = 'Failed to load profile. Please try again.';
+          isLoading = false;
+          isRefreshing = false;
+        });
+      }
       debugPrint('Error fetching user profile: $e');
     }
   }
@@ -205,15 +213,18 @@ class _ProfilePageState extends State<ProfilePage> {
             await _profileService.uploadProfilePicture(context, imageFile);
 
         if (newAvatarUrl != null) {
-          setState(() {
-            // If the URL is a Cloudinary URL, use it as is
-            if (newAvatarUrl.contains('cloudinary.com')) {
-              avatarUrl = newAvatarUrl;
-            } else {
-              // Otherwise, append it to the base URL
-              avatarUrl = 'https://findsafe-backend.onrender.com$newAvatarUrl';
-            }
-          });
+          if (mounted) {
+            setState(() {
+              // If the URL is a Cloudinary URL, use it as is
+              if (newAvatarUrl.contains('cloudinary.com')) {
+                avatarUrl = newAvatarUrl;
+              } else {
+                // Otherwise, append it to the base URL
+                avatarUrl =
+                    'https://findsafe-backend.onrender.com$newAvatarUrl';
+              }
+            });
+          }
 
           // Refresh user profile to get updated data
           await _fetchUserProfile(refresh: true);
@@ -236,9 +247,11 @@ class _ProfilePageState extends State<ProfilePage> {
       final bool success = await _profileService.deleteProfilePicture(context);
 
       if (success) {
-        setState(() {
-          avatarUrl = null;
-        });
+        if (mounted) {
+          setState(() {
+            avatarUrl = null;
+          });
+        }
 
         // Refresh user profile to get updated data
         await _fetchUserProfile(refresh: true);
@@ -318,6 +331,12 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _fetchUserProfile();
+  }
+
+  @override
+  void dispose() {
+    // Add any cleanup code here
+    super.dispose();
   }
 
   @override
