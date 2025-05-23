@@ -67,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
 
       Get.off(
-        () => showHome ? const CustomBottomNav() : const Onbording(),
+        () => showHome ? const CustomBottomNav() : const Onboarding(),
         transition: Transition.fadeIn,
         duration: const Duration(milliseconds: 500),
       );

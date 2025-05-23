@@ -31,7 +31,7 @@ class AuthProvider {
           'password': user.password,
         },
       );
-
+      _logger.info("Response: ${response.data}");
       if (response.statusCode == 200) {
         // Successful signup
         final successMessage = response.data['message'];
@@ -113,7 +113,6 @@ class AuthProvider {
           'password': user.password,
         },
       );
-
       if (response.statusCode == 200) {
         _logger.info('Login successful for user: ${user.email}');
 
@@ -318,7 +317,7 @@ class AuthProvider {
           'otp': otp,
         },
       );
-
+      _logger.info("Response: ${response.data}");
       if (response.statusCode == 200) {
         // Successful verification
         final successMessage = response.data['message'];
@@ -374,7 +373,7 @@ class AuthProvider {
           'otp': otp,
         },
       );
-
+      _logger.info("Response: ${response.data}");
       if (response.statusCode == 200) {
         // Successful verification
         final successMessage = response.data['message'];

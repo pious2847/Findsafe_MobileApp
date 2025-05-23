@@ -79,6 +79,10 @@ class ResetPasswordState extends State<ResetPassword> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+
     return ModalProgressHUD(
       inAsyncCall: _isLoading,
       child: Scaffold(
@@ -86,7 +90,7 @@ class ResetPasswordState extends State<ResetPassword> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Iconsax.arrow_left, color: Colors.black),
+            icon: Icon(Iconsax.arrow_left, color: textColor),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -103,6 +107,7 @@ class ResetPasswordState extends State<ResetPassword> {
                     style: GoogleFonts.poppins(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
+                      color: textColor,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -110,7 +115,7 @@ class ResetPasswordState extends State<ResetPassword> {
                     "Create a new password for your account",
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Colors.grey[600],
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                     ),
                   ),
                   const SizedBox(height: 48),
@@ -121,15 +126,30 @@ class ResetPasswordState extends State<ResetPassword> {
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
+                          style: TextStyle(color: textColor),
                           decoration: InputDecoration(
                             labelText: 'New Password',
+                            labelStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600]),
                             hintText: 'Enter your new password',
-                            prefixIcon: const Icon(Iconsax.lock_1),
+                            hintStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.grey[500]
+                                    : Colors.grey[400]),
+                            prefixIcon: Icon(Iconsax.lock_1,
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600]),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
                                     ? Iconsax.eye
                                     : Iconsax.eye_slash,
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
                               ),
                               onPressed: () {
                                 setState(() {
@@ -139,14 +159,29 @@ class ResetPasswordState extends State<ResetPassword> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: isDarkMode
+                                    ? Colors.grey[700]!
+                                    : Colors.grey[300]!,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: isDarkMode
+                                    ? Colors.grey[700]!
+                                    : Colors.grey[300]!,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Colors.blue,
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.primary,
                                 width: 2,
                               ),
                             ),
+                            filled: isDarkMode,
+                            fillColor: isDarkMode ? theme.cardColor : null,
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -161,15 +196,30 @@ class ResetPasswordState extends State<ResetPassword> {
                         TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
+                          style: TextStyle(color: textColor),
                           decoration: InputDecoration(
                             labelText: 'Confirm Password',
+                            labelStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600]),
                             hintText: 'Confirm your new password',
-                            prefixIcon: const Icon(Iconsax.lock_1),
+                            hintStyle: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.grey[500]
+                                    : Colors.grey[400]),
+                            prefixIcon: Icon(Iconsax.lock_1,
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600]),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscureConfirmPassword
                                     ? Iconsax.eye
                                     : Iconsax.eye_slash,
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
                               ),
                               onPressed: () {
                                 setState(() {
@@ -180,14 +230,29 @@ class ResetPasswordState extends State<ResetPassword> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: isDarkMode
+                                    ? Colors.grey[700]!
+                                    : Colors.grey[300]!,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: isDarkMode
+                                    ? Colors.grey[700]!
+                                    : Colors.grey[300]!,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                color: Colors.blue,
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.primary,
                                 width: 2,
                               ),
                             ),
+                            filled: isDarkMode,
+                            fillColor: isDarkMode ? theme.cardColor : null,
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -202,7 +267,7 @@ class ResetPasswordState extends State<ResetPassword> {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            backgroundColor: Colors.black54,
+                            backgroundColor: theme.colorScheme.primary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),

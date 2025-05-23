@@ -182,14 +182,21 @@ class VerifyAccountState extends State<VerifyAccount> {
                             borderRadius: BorderRadius.circular(10),
                             fieldHeight: 50,
                             fieldWidth: 45,
-                            activeFillColor: Colors.white,
-                            inactiveFillColor: Colors.grey[100],
-                            selectedFillColor: Colors.white,
-                            activeColor: Colors.blue,
-                            inactiveColor: Colors.grey[300],
-                            selectedColor: Colors.blue,
+                            activeFillColor:
+                                isDarkMode ? theme.cardColor : Colors.white,
+                            inactiveFillColor: isDarkMode
+                                ? theme.cardColor.withAlpha(180)
+                                : Colors.grey[100],
+                            selectedFillColor:
+                                isDarkMode ? theme.cardColor : Colors.white,
+                            activeColor: theme.colorScheme.primary,
+                            inactiveColor: isDarkMode
+                                ? Colors.grey[700]
+                                : Colors.grey[300],
+                            selectedColor: theme.colorScheme.primary,
                           ),
-                          cursorColor: Colors.black,
+                          cursorColor: textColor,
+                          textStyle: TextStyle(color: textColor),
                           animationDuration: const Duration(milliseconds: 300),
                           enableActiveFill: true,
                           keyboardType: TextInputType.number,
@@ -205,7 +212,7 @@ class VerifyAccountState extends State<VerifyAccount> {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            backgroundColor: Colors.black54,
+                            backgroundColor: theme.colorScheme.primary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -229,7 +236,9 @@ class VerifyAccountState extends State<VerifyAccount> {
                             Text(
                               "Didn't receive the code?",
                               style: GoogleFonts.poppins(
-                                color: Colors.grey[600],
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
                               ),
                             ),
                             TextButton(
@@ -240,7 +249,11 @@ class VerifyAccountState extends State<VerifyAccount> {
                                     : 'Resend in $_resendTime seconds',
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.bold,
-                                  color: _canResend ? Colors.blue : Colors.grey,
+                                  color: _canResend
+                                      ? theme.colorScheme.primary
+                                      : isDarkMode
+                                          ? Colors.grey[600]
+                                          : Colors.grey[400],
                                 ),
                               ),
                             ),
@@ -255,7 +268,9 @@ class VerifyAccountState extends State<VerifyAccount> {
                             'Skip and sign in later',
                             style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey[600],
+                              color: isDarkMode
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
                             ),
                           ),
                         ),
