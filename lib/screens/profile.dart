@@ -303,7 +303,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void _handleLogout() async {
     try {
       await _authProvider.logout(context);
-      Get.offAll(() => const CustomBottomNav());
     } catch (e) {
       CustomToast.show(
         context: context,

@@ -1,7 +1,10 @@
 import 'package:findsafe/models/User_model.dart';
+import 'package:findsafe/screens/forgot_password.dart';
 import 'package:findsafe/screens/signup.dart';
 import 'package:findsafe/service/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -161,7 +164,7 @@ class _SigninState extends State<Signin> {
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        // Navigate to forgot password screen
+                        Get.to(const ForgotPassword());
                       },
                       child: Text(
                         'Forgot Password?',
