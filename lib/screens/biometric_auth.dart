@@ -145,7 +145,7 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen>
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Authentication Required',
-        showBackButton: true,
+        showBackButton: false,
       ),
       body: Center(
         child: Padding(

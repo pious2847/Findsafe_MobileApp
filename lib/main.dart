@@ -1,8 +1,10 @@
+import 'package:findsafe/controllers/app_lifecycle_controller.dart';
 import 'package:findsafe/controllers/theme_controller.dart';
 import 'package:findsafe/screens/splashscreen.dart';
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/background_worker_simple.dart';
 import 'package:findsafe/utilities/logger.dart';
+import 'package:findsafe/widgets/global_auth_overlay.dart';
 import 'package:findsafe/widgets/two_factor_auth_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,6 +26,10 @@ void main() async {
     // Initialize theme controller
     logger.info('Initializing theme controller');
     Get.put(ThemeController());
+
+    // Initialize app lifecycle controller
+    logger.info('Initializing app lifecycle controller');
+    Get.put(AppLifecycleController());
 
     // Set preferred orientations
     logger.info('Setting preferred orientations');
@@ -52,8 +58,10 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeController.themeMode,
-      home: const TwoFactorAuthWrapper(
-        child: SplashScreen(),
+      home: const GlobalAuthOverlay(
+        child: TwoFactorAuthWrapper(
+          child: SplashScreen(),
+        ),
       ),
       defaultTransition: Transition.fade,
     );

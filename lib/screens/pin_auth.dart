@@ -76,8 +76,13 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
 
         if (!mounted) return;
 
-        // Always use Navigator.pop with result for consistency
-        Navigator.pop(context, true);
+        // Call the success callback if provided
+        if (widget.onSuccess != null) {
+          widget.onSuccess!();
+        } else {
+          // Fallback to Navigator.pop with result
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       debugPrint('Error loading PIN: $e');
@@ -118,8 +123,13 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
 
       if (!mounted) return;
 
-      // Always use Navigator.pop with result for consistency
-      Navigator.pop(context, true);
+      // Call the success callback if provided
+      if (widget.onSuccess != null) {
+        widget.onSuccess!();
+      } else {
+        // Fallback to Navigator.pop with result
+        Navigator.pop(context, true);
+      }
     } catch (e) {
       debugPrint('Error saving PIN: $e');
 
@@ -283,8 +293,13 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
       await Future.delayed(const Duration(milliseconds: 100));
 
       if (mounted) {
-        // Always use Navigator.pop with result for consistency
-        Navigator.pop(context, true);
+        // Call the success callback if provided
+        if (widget.onSuccess != null) {
+          widget.onSuccess!();
+        } else {
+          // Fallback to Navigator.pop with result
+          Navigator.pop(context, true);
+        }
       }
     } else {
       // PIN is incorrect
@@ -292,11 +307,11 @@ class _PinAuthScreenState extends State<PinAuthScreen> {
       _resetPin();
 
       // Don't navigate away on failure, let the user try again
-      // Only pop with false if explicitly requested to fail
+      // Only call failure callback if explicitly provided
       if (widget.onFailure != null && mounted) {
         // Add a small delay to prevent navigation conflicts
         await Future.delayed(const Duration(milliseconds: 100));
-        Navigator.pop(context, false);
+        widget.onFailure!();
       }
     }
   }
