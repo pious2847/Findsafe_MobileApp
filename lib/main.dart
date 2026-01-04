@@ -2,7 +2,7 @@ import 'package:findsafe/controllers/app_lifecycle_controller.dart';
 import 'package:findsafe/controllers/theme_controller.dart';
 import 'package:findsafe/screens/splashscreen.dart';
 import 'package:findsafe/theme/app_theme.dart';
-import 'package:findsafe/utilities/background_worker_simple.dart';
+import 'package:findsafe/service/background_location_service.dart';
 import 'package:findsafe/utilities/logger.dart';
 import 'package:findsafe/widgets/global_auth_overlay.dart';
 import 'package:findsafe/widgets/two_factor_auth_wrapper.dart';
@@ -20,8 +20,8 @@ void main() async {
 
   try {
     // Initialize services
-    logger.info('Initializing background service');
-    await initializeBackgroundService();
+    logger.info('Initializing background location service');
+    await BackgroundLocationService.initialize();
 
     // Initialize theme controller
     logger.info('Initializing theme controller');

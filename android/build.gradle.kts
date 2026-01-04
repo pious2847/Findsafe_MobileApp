@@ -2,10 +2,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        // Add the repository for background_fetch plugin
-        maven {
-            url = uri("https://dl.bintray.com/transistorsoft/maven")
-        }
         maven {
             url = uri("https://jitpack.io")
         }

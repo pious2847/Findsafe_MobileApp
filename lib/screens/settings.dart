@@ -6,6 +6,8 @@ import 'package:findsafe/controllers/theme_controller.dart';
 import 'package:findsafe/screens/about.dart';
 import 'package:findsafe/screens/notification_settings.dart';
 import 'package:findsafe/screens/security_wrapper.dart';
+import 'package:findsafe/service/background_location_service.dart';
+import 'package:findsafe/services/location_permission_service.dart';
 import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
 import 'package:findsafe/widgets/custom_app_bar.dart';
@@ -316,6 +318,160 @@ class _SettingsPageState extends State<SettingsPage> {
                         _privacyController.toggleAnalytics(value);
                       },
                     )),
+              ],
+            ),
+
+            // Location Permissions
+            SettingsCard(
+              title: 'Location Permissions',
+              children: [
+                FutureBuilder<String>(
+                  future: BackgroundLocationService.getPermissionStatus(),
+                  builder: (context, snapshot) {
+                    final status = snapshot.data ?? 'Loading...';
+                    final isAlways = status.contains('Always');
+
+                    return SettingsItem(
+                      title: 'Location Access',
+                      subtitle: status,
+                      icon: Iconsax.location,
+                      trailing: Icon(
+                        isAlways ? Iconsax.tick_circle : Iconsax.warning_2,
+                        color: isAlways ? Colors.green : Colors.orange,
+                      ),
+                      onTap: () async {
+                        // Request proper location permissions
+                        try {
+                          final result = await LocationPermissionService.requestLocationPermissions(context);
+                          if (context.mounted) {
+                            LocationPermissionService.showPermissionToast(context, result);
+                            setState(() {}); // Refresh the UI
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            CustomToast.show(
+                              context: context,
+                              message: 'Error requesting permissions: $e',
+                              type: ToastType.error,
+                              position: ToastPosition.top,
+                            );
+                          }
+                        }
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            // Background Service Status
+            SettingsCard(
+              title: 'Background Location Service',
+              children: [
+                SettingsItem(
+                  title: 'Service Status',
+                  subtitle: BackgroundLocationService.isInitialized
+                      ? 'Running'
+                      : 'Stopped',
+                  icon: Iconsax.location,
+                  trailing: Icon(
+                    BackgroundLocationService.isInitialized
+                        ? Iconsax.tick_circle
+                        : Iconsax.close_circle,
+                    color: BackgroundLocationService.isInitialized
+                        ? Colors.green
+                        : Colors.red,
+                  ),
+                  onTap: () async {
+                    // Toggle service
+                    try {
+                      if (BackgroundLocationService.isInitialized) {
+                        await BackgroundLocationService.stop();
+                        if (context.mounted) {
+                          CustomToast.show(
+                            context: context,
+                            message: 'Background service stopped',
+                            type: ToastType.info,
+                            position: ToastPosition.top,
+                          );
+                        }
+                      } else {
+                        await BackgroundLocationService.start();
+                        if (context.mounted) {
+                          CustomToast.show(
+                            context: context,
+                            message: 'Background service started',
+                            type: ToastType.success,
+                            position: ToastPosition.top,
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        CustomToast.show(
+                          context: context,
+                          message: 'Error: $e',
+                          type: ToastType.error,
+                          position: ToastPosition.top,
+                        );
+                      }
+                    }
+                  },
+                ),
+                SettingsItem(
+                  title: 'Update Location Now',
+                  subtitle: 'Manually trigger location update',
+                  icon: Iconsax.refresh,
+                  onTap: () async {
+                    try {
+                      await BackgroundLocationService.updateLocationNow();
+                      if (context.mounted) {
+                        CustomToast.show(
+                          context: context,
+                          message: 'Location update triggered',
+                          type: ToastType.success,
+                          position: ToastPosition.top,
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        CustomToast.show(
+                          context: context,
+                          message: 'Failed to update location: $e',
+                          type: ToastType.error,
+                          position: ToastPosition.top,
+                        );
+                      }
+                    }
+                  },
+                ),
+                SettingsItem(
+                  title: 'Restart Service',
+                  subtitle: 'Restart background location tracking',
+                  icon: Iconsax.refresh_circle,
+                  onTap: () async {
+                    try {
+                      await BackgroundLocationService.restart();
+                      if (context.mounted) {
+                        CustomToast.show(
+                          context: context,
+                          message: 'Background service restarted',
+                          type: ToastType.success,
+                          position: ToastPosition.top,
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        CustomToast.show(
+                          context: context,
+                          message: 'Failed to restart service: $e',
+                          type: ToastType.error,
+                          position: ToastPosition.top,
+                        );
+                      }
+                    }
+                  },
+                ),
               ],
             ),
 
