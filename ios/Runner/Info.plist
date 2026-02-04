@@ -45,5 +45,31 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Location Permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>FindSafe needs your location to help track your device and keep it safe.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>FindSafe needs continuous access to your location to provide real-time device tracking and security features, even when the app is in the background.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>FindSafe needs continuous access to your location for device tracking and security features.</string>
+	
+	<!-- Notification Permissions -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>location</string>
+		<string>remote-notification</string>
+	</array>
+	
+	<!-- Camera and Photo Library (for image picker) -->
+	<key>NSCameraUsageDescription</key>
+	<string>FindSafe needs access to your camera to update your profile picture.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FindSafe needs access to your photo library to update your profile picture.</string>
+	
+	<!-- Biometric Authentication -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>FindSafe uses Face ID to secure your account and provide quick authentication.</string>
 </dict>
 </plist>

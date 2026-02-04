@@ -138,7 +138,7 @@ class AppTheme {
       labelStyle: GoogleFonts.poppins(color: textSecondaryColor),
       hintStyle: GoogleFonts.poppins(color: textSecondaryColor.withOpacity(0.7)),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardColor,
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -275,7 +275,7 @@ class AppTheme {
       labelStyle: GoogleFonts.poppins(color: darkTextSecondaryColor),
       hintStyle: GoogleFonts.poppins(color: darkTextSecondaryColor.withOpacity(0.7)),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: darkCardColor,
       elevation: 2,
       shape: RoundedRectangleBorder(
