@@ -12,6 +12,7 @@ class UserProfileModel {
   late String username;
   String? phone;
   late String email;
+  String? profilePicture;
   Address? addressInfo;
   EmergencyContact? emergencyContact;
   late bool verified;
@@ -23,31 +24,33 @@ class UserProfileModel {
     required this.username,
     this.phone,
     required this.email,
+    this.profilePicture,
     this.addressInfo,
     this.emergencyContact,
     this.verified = false,
     required this.password,
     this.devices,
   });
-factory UserProfileModel.fromJson(Map<String, dynamic> json) {
-  return UserProfileModel(
-    id: json['_id'],
-    username: json['name'] ?? '',
-    phone: json['phone'],
-    email: json['email'] ?? '',
-    addressInfo: json['addressinfo'] != null
-        ? Address.fromJson(json['addressinfo'])
-        : null,
-    emergencyContact: json['emergencycontact'] != null
-        ? EmergencyContact.fromJson(json['emergencycontact'])
-        : null,
-    verified: json['verified'] ?? false,
-    password: json['password'] ?? '',
-    devices: json['devices'] != null
-        ? List<String>.from(json['devices'].map((x) => x.toString()))
-        : [],
-  );
-}
+  factory UserProfileModel.fromJson(Map<String, dynamic> json) {
+    return UserProfileModel(
+      id: json['_id'],
+      username: json['name'] ?? '',
+      phone: json['phone'],
+      email: json['email'] ?? '',
+      profilePicture: json['profilePicture'],
+      addressInfo: json['addressinfo'] != null
+          ? Address.fromJson(json['addressinfo'])
+          : null,
+      emergencyContact: json['emergencycontact'] != null
+          ? EmergencyContact.fromJson(json['emergencycontact'])
+          : null,
+      verified: json['verified'] ?? false,
+      password: json['password'] ?? '',
+      devices: json['devices'] != null
+          ? List<String>.from(json['devices'].map((x) => x.toString()))
+          : [],
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -55,6 +58,7 @@ factory UserProfileModel.fromJson(Map<String, dynamic> json) {
       'username': username,
       'phone': phone,
       'email': email,
+      'profilePicture': profilePicture,
       'addressinfo': addressInfo?.toJson(),
       'emergencycontact': emergencyContact?.toJson(),
       'verified': verified,
@@ -87,21 +91,24 @@ class Address {
 
 class EmergencyContact {
   String? name;
-  String? contact;
+  String? phone;
+  String? relationship;
 
-  EmergencyContact({this.name, this.contact});
+  EmergencyContact({this.name, this.phone, this.relationship});
 
   factory EmergencyContact.fromJson(Map<String, dynamic> json) {
     return EmergencyContact(
       name: json['name'],
-      contact: json['contact'],
+      phone: json['contact'], // Using 'contact' from backend for phone
+      relationship: json['relationship'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'contact': contact,
+      'contact': phone, // Map 'phone' to 'contact' for backend compatibility
+      'relationship': relationship,
     };
   }
 }

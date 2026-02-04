@@ -1,25 +1,69 @@
+import 'package:findsafe/controllers/app_lifecycle_controller.dart';
+import 'package:findsafe/controllers/theme_controller.dart';
 import 'package:findsafe/screens/splashscreen.dart';
-import 'package:findsafe/utilities/background_worker.dart';
+import 'package:findsafe/theme/app_theme.dart';
+import 'package:findsafe/service/background_location_service.dart';
+import 'package:findsafe/utilities/logger.dart';
+import 'package:findsafe/widgets/global_auth_overlay.dart';
+import 'package:findsafe/widgets/two_factor_auth_wrapper.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
-void main() async{
-  
- WidgetsFlutterBinding.ensureInitialized();
-  await initializeBackgroundService();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(const MyApp());
-}
+  // Initialize logger
+  AppLogger.init();
+  final logger = AppLogger.getLogger('main');
+  logger.info('Starting FindSafe app');
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  try {
+    // Initialize services
+    logger.info('Initializing background location service');
+    await BackgroundLocationService.initialize();
 
-  @override
-  Widget build(BuildContext context) {
-    return const GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
-    );
+    // Initialize theme controller
+    logger.info('Initializing theme controller');
+    Get.put(ThemeController());
+
+    // Initialize app lifecycle controller
+    logger.info('Initializing app lifecycle controller');
+    Get.put(AppLifecycleController());
+
+    // Set preferred orientations
+    logger.info('Setting preferred orientations');
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
+    runApp(MyApp());
+  } catch (e, stackTrace) {
+    logger.severe('Error during app initialization', e, stackTrace);
+    rethrow;
   }
 }
 
+class MyApp extends StatelessWidget {
+  MyApp({super.key});
+
+  final ThemeController themeController = Get.find<ThemeController>();
+
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      title: 'FindSafe',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeController.themeMode,
+      home: const GlobalAuthOverlay(
+        child: TwoFactorAuthWrapper(
+          child: SplashScreen(),
+        ),
+      ),
+      defaultTransition: Transition.fade,
+    );
+  }
+}

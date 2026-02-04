@@ -1,11 +1,17 @@
+import 'package:findsafe/controllers/geofence_controller.dart';
+import 'package:findsafe/controllers/notification_controller.dart';
 import 'package:findsafe/models/directions_model.dart';
 import 'package:findsafe/service/location.dart';
+import 'package:findsafe/theme/app_theme.dart';
 import 'package:findsafe/utilities/directions.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
-import 'package:findsafe/widgets/custom_buttons.dart';
+import 'package:findsafe/widgets/custom_app_bar.dart';
 import 'package:findsafe/widgets/device_draggable_sheet.dart';
+import 'package:findsafe/widgets/map_controls.dart';
+import 'package:findsafe/widgets/route_info_card.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -25,6 +31,10 @@ class _HomeState extends State<Home> {
   String? _selectedDeviceId;
   List<dynamic> locationHistory = [];
   final Set<Polyline> _polylines = {};
+  MapType _currentMapType = MapType.hybrid;
+  late GeofenceController _geofenceController;
+  late NotificationController _notificationController;
+  final RxBool _showGeofences = false.obs;
 
   final locationApiService = LocationApiService();
 
@@ -45,7 +55,7 @@ class _HomeState extends State<Home> {
         CustomToast.show(
             context: context,
             message:
-                'Location permission denied. please check settings to enable',
+                'Location permission denied. Please check settings to enable',
             type: ToastType.warning,
             position: ToastPosition.top);
       }
@@ -64,6 +74,11 @@ class _HomeState extends State<Home> {
           tilt: 50.0,
         );
 
+        // Remove existing 'current_location' marker if it exists
+        _markers.removeWhere(
+            (marker) => marker.markerId.value == 'current_location');
+
+        // Add the new marker
         _markers.add(
           Marker(
             markerId: const MarkerId('current_location'),
@@ -84,13 +99,14 @@ class _HomeState extends State<Home> {
     } catch (e) {
       if (mounted) {
         CustomToast.show(
-            context: context,
-            message:
-                'Unable to set current location. please check settings to enable location permission',
-            type: ToastType.error,
-            position: ToastPosition.top);
+          context: context,
+          message:
+              'Unable to set current location. Please check settings to enable location permission',
+          type: ToastType.error,
+          position: ToastPosition.top,
+        );
       }
-      print('Error getting location: $e');
+      debugPrint('Error getting location: $e');
     }
   }
 
@@ -101,9 +117,48 @@ class _HomeState extends State<Home> {
     });
   }
 
-  // Function to selected device
+  // Function to toggle map type
+  void _toggleMapType() {
+    setState(() {
+      _currentMapType =
+          _currentMapType == MapType.normal ? MapType.hybrid : MapType.normal;
+    });
+  }
+
+  // Function to toggle geofences visibility
+  void _toggleGeofences() {
+    _showGeofences.value = !_showGeofences.value;
+  }
+
+  // Function to navigate to device location
+  void _navigateToDeviceLocation() {
+    if (_deviceCurrentLocation != null) {
+      _googleMapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: _deviceCurrentLocation!.position,
+            zoom: 18.5,
+            tilt: 50.0,
+          ),
+        ),
+      );
+    }
+  }
+
+  // Function to clear route info
+  void _clearRouteInfo() {
+    setState(() {
+      _info = null;
+      _polylines.clear();
+    });
+  }
+
+  // Function to select device
   Future<void> _selectDevice(String deviceId) async {
     try {
+      // Clear previous route
+      _polylines.clear();
+
       // Fetch the latest location of the selected device
       final latestLocation =
           await locationApiService.fetchLatestLocation(deviceId);
@@ -111,11 +166,16 @@ class _HomeState extends State<Home> {
 
       if (latestLocation != null && currentLocation != null) {
         setState(() {
+          // Remove existing device location marker if it exists
+          _markers
+              .removeWhere((marker) => marker.markerId.value == 'destination');
+
+          // Add the new device location marker
           _deviceCurrentLocation = Marker(
             markerId: const MarkerId('destination'),
             infoWindow: const InfoWindow(title: 'Device Location'),
             icon:
-                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
             position: latestLocation,
           );
           _markers.add(_deviceCurrentLocation!);
@@ -135,28 +195,61 @@ class _HomeState extends State<Home> {
             // Add a polyline to represent the route
             _polylines.add(Polyline(
               polylineId: const PolylineId('route'),
-              color: Colors.blue,
+              color: AppTheme.primaryColor,
               width: 5,
               points: directions.polylinePoints
-                  .map(
-                    (point) => LatLng(point.latitude, point.longitude),
-                  )
+                  .map((point) => LatLng(point.latitude, point.longitude))
                   .toList(),
             ));
           });
+
+          // Zoom to show the entire route
+          LatLngBounds bounds = LatLngBounds(
+            southwest: LatLng(
+              directions.bounds.southwest.latitude,
+              directions.bounds.southwest.longitude,
+            ),
+            northeast: LatLng(
+              directions.bounds.northeast.latitude,
+              directions.bounds.northeast.longitude,
+            ),
+          );
+
+          _googleMapController.animateCamera(
+            CameraUpdate.newLatLngBounds(bounds, 50),
+          );
         }
       }
     } catch (e) {
-      print('Error selecting device: $e');
+      debugPrint('Error selecting device: $e');
+      CustomToast.show(
+        context: context,
+        message: 'Error locating device. Please try again.',
+        type: ToastType.error,
+        position: ToastPosition.top,
+      );
     }
   }
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize controllers
+    if (!Get.isRegistered<GeofenceController>()) {
+      Get.put(GeofenceController());
+    }
+    _geofenceController = Get.find<GeofenceController>();
+
+    if (!Get.isRegistered<NotificationController>()) {
+      Get.put(NotificationController());
+    }
+    _notificationController = Get.find<NotificationController>();
+
     // Use WidgetsBinding to ensure initialization happens after frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _getLocation();
+      _geofenceController.loadGeofences();
     });
   }
 
@@ -171,105 +264,77 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      body: Stack(
-      alignment: Alignment.center,
-        children: [
-          GoogleMap(
-            initialCameraPosition: initialCameraPosition,
-            myLocationEnabled: true,
-            mapType: MapType.hybrid,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-            onMapCreated: (controller) => _googleMapController = controller,
-            markers: _markers,
-            polylines: _polylines,
-            compassEnabled: true, // Add this
-            cloudMapId: '',
+      extendBodyBehindAppBar: true,
+      appBar: CustomAppBar(
+        title: 'FindSafe',
+        showBackButton: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Iconsax.notification,
+              color: isDarkMode ? Colors.white : Colors.white,
+            ),
+            onPressed: () {
+              // Show notifications
+            },
           ),
+        ],
+      ),
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Google Map
+          Obx(() {
+            // Make sure we're using a reactive variable from the controller
+            final circles = _geofenceController.geofenceCircles;
+            final geofenceCircles = _showGeofences.value ? circles : <Circle>{};
+
+            return GoogleMap(
+              initialCameraPosition: initialCameraPosition,
+              myLocationEnabled: true,
+              mapType: _currentMapType,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              onMapCreated: (controller) => _googleMapController = controller,
+              markers: _markers,
+              polylines: _polylines,
+              circles: geofenceCircles,
+              compassEnabled: true,
+              cloudMapId: '',
+            );
+          }),
+
+          // Route information card
           if (_info != null)
-            Positioned(
-              top: 40.0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 6.0,
-                  horizontal: 12.0,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(20.0),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      offset: Offset(0, 2),
-                      blurRadius: 6.0,
-                    )
-                  ],
-                ),
-                child: Text(
-                  '${_info?.totalDistance}, ${_info?.totalDuration}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+            RouteInfoCard(
+              distance: _info!.totalDistance,
+              duration: _info!.totalDuration,
+              onClose: _clearRouteInfo,
             ),
 
-          // Conditionally display the DeviceDraggableSheet
+          // Device draggable sheet
           if (_isDraggableOpen)
-            AbsorbPointer(
-              absorbing: false,
-              child: DeviceDraggableSheet(
-                onTap: _selectDevice,
-                current_device: _selectedDeviceId,
-              ),
+            DeviceDraggableSheet(
+              onTap: _selectDevice,
+              current_device: _selectedDeviceId,
             ),
 
-          Positioned(
-            bottom: 100,
-            right: 18,
-            child: Column(
-              children: [
-                if (_deviceCurrentLocation != null)
-                  Custom_Icon_Buttons(
-                      icon: Iconsax.arrow,
-                      onTap: () {
-                        if (_deviceCurrentLocation != null) {
-                          _googleMapController.animateCamera(
-                            CameraUpdate.newCameraPosition(
-                              CameraPosition(
-                                target: _deviceCurrentLocation!.position,
-                                zoom: 18.5,
-                                tilt: 50.0,
-                              ),
-                            ),
-                          );
-                        }
-                      }),
-                const SizedBox(
-                  height: 30,
-                ),
-                if (!_isDraggableOpen)
-                  Custom_Icon_Buttons(
-                    icon: Iconsax.gps,
-                    onTap: () {
-                      _getLocation();
-                    },
-                  ),
-                if (!_isDraggableOpen)
-                  const SizedBox(
-                    height: 30,
-                  ),
-                Custom_Icon_Buttons(
-                  icon: _isDraggableOpen
-                      ? Iconsax.arrow_square_down
-                      : Iconsax.arrow_square_up,
-                  onTap: _toggleDraggableSheet,
-                ),
-              ],
-            ),
+          // Map controls
+          MapControls(
+            onMyLocationPressed: _getLocation,
+            onDeviceLocationPressed: _navigateToDeviceLocation,
+            onToggleDeviceSheet: _toggleDraggableSheet,
+            onToggleGeofences: _toggleGeofences,
+            isDeviceSheetOpen: _isDraggableOpen,
+            hasDeviceLocation: _deviceCurrentLocation != null,
+            isMapTypeHybrid: _currentMapType == MapType.hybrid,
+            showGeofences: _showGeofences.value,
+            onToggleMapType: _toggleMapType,
           ),
         ],
       ),
