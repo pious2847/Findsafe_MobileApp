@@ -5,6 +5,9 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+
 android {
     namespace = "com.example.findsafe"
     ndkVersion = "27.0.12077973"
@@ -22,10 +25,10 @@ android {
     }
 
     // Read Google Maps API key from local.properties
-    val localProperties = java.util.Properties()
+    val localProperties = Properties()
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { localProperties.load(it) }
+        localProperties.load(FileInputStream(localPropertiesFile))
     }
     val googleApiKey = localProperties.getProperty("GOOGLE_API_KEY") ?: "YOUR_API_KEY_HERE"
 
