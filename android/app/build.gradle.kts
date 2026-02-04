@@ -21,6 +21,14 @@ android {
         jvmTarget = JavaVersion.VERSION_21.toString()
     }
 
+    // Read Google Maps API key from local.properties
+    val localProperties = java.util.Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { localProperties.load(it) }
+    }
+    val googleApiKey = localProperties.getProperty("GOOGLE_API_KEY") ?: "YOUR_API_KEY_HERE"
+
     defaultConfig {
         // Using the original application ID
         applicationId = "com.example.findsafe"
@@ -31,13 +39,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
-        // Read Google Maps API key from local.properties or use placeholder
-        val localProperties = java.util.Properties()
-        val localPropertiesFile = rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            localPropertiesFile.inputStream().use { localProperties.load(it) }
-        }
-        val googleApiKey = localProperties.getProperty("GOOGLE_API_KEY") ?: "YOUR_API_KEY_HERE"
+        // Set the Google Maps API key as a manifest placeholder
         manifestPlaceholders["GOOGLE_API_KEY"] = googleApiKey
     }
 
