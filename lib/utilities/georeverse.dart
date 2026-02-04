@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:findsafe/.env.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
   Future<String> getPlaceName(double latitude, double longitude) async {
@@ -8,7 +8,7 @@ import 'package:findsafe/.env.dart';
       'https://maps.googleapis.com/maps/api/geocode/json',
       queryParameters: {
         'latlng': '$latitude,$longitude',
-        'key': googleAPIKey,
+        'key': dotenv.env['GOOGLE_API_KEY'] ?? '',
       },
     );
 

@@ -8,10 +8,14 @@ import 'package:findsafe/widgets/global_auth_overlay.dart';
 import 'package:findsafe/widgets/two_factor_auth_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
 
   // Initialize logger
   AppLogger.init();

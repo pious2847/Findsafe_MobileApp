@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:dio/dio.dart';
-import 'package:findsafe/.env.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:findsafe/models/directions_model.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -22,7 +22,7 @@ class DirectionsRepository {
       queryParameters: {
         'origin': '${origin.latitude},${origin.longitude}',
         'destination': '${destination.latitude},${destination.longitude}',
-        'key': googleAPIKey,
+        'key': dotenv.env['GOOGLE_API_KEY'] ?? '',
       },
     );
     // Check if response is successful

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:findsafe/.env.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:findsafe/constants/custom_bottom_nav.dart';
 import 'package:findsafe/models/User_model.dart';
 import 'package:findsafe/screens/login.dart';
@@ -16,10 +16,12 @@ class AuthProvider {
   final deviceApiService = DeviceApiService();
   final _logger = AppLogger.getLogger('AuthProvider');
 
+  String get apiUrl => dotenv.env['API_URL'] ?? '';
+
   Future<Map<String, dynamic>> signUp(BuildContext context, User user) async {
     try {
       final response = await dio.post(
-        "$APIURL/signup",
+        "$apiUrl/signup",
         options: Options(
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -102,7 +104,7 @@ class AuthProvider {
       _logger.info('Attempting login for user: ${user.email}');
 
       final response = await dio.post(
-        "$APIURL/login",
+        "$apiUrl/login",
         options: Options(
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -221,7 +223,7 @@ class AuthProvider {
       _logger.info('Sending password reset email to: $email');
 
       final response = await dio.post(
-        "$APIURL/forgot-password",
+        "$apiUrl/forgot-password",
         options: Options(
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -306,7 +308,7 @@ class AuthProvider {
   Future<void> verifyOtp(BuildContext context, String email, String otp) async {
     try {
       final response = await dio.post(
-        "$APIURL/verify-otp",
+        "$apiUrl/verify-otp",
         options: Options(
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -362,7 +364,7 @@ class AuthProvider {
       BuildContext context, String email, String otp) async {
     try {
       final response = await dio.post(
-        "$APIURL/verify-reset-otp",
+        "$apiUrl/verify-reset-otp",
         options: Options(
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -425,7 +427,7 @@ class AuthProvider {
   Future<void> resendVerificationOtp(BuildContext context, String email) async {
     try {
       final response = await dio.post(
-        "$APIURL/resend-verification",
+        "$apiUrl/resend-verification",
         options: Options(
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -482,7 +484,7 @@ class AuthProvider {
       String newPassword) async {
     try {
       final response = await dio.post(
-        "$APIURL/reset-password",
+        "$apiUrl/reset-password",
         options: Options(
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
@@ -542,9 +544,9 @@ class AuthProvider {
 
       _logger.info('User data for user update: $user');
 
-      // final url = '$APIURL/update/$userId';
+      // final url = '$apiUrl/update/$userId';
       final dio = Dio();
-      final response = await dio.put('$APIURL/update/$userId',
+      final response = await dio.put('$apiUrl/update/$userId',
           options: Options(
             headers: {
               'Content-Type': 'application/json; charset=UTF-8',
@@ -590,7 +592,7 @@ class AuthProvider {
       }
 
       final dio = Dio();
-      final url = '$APIURL/get-user/$userId';
+      final url = '$apiUrl/get-user/$userId';
 
       // Send GET request to fetch user data
       final response = await dio.get(
@@ -671,7 +673,7 @@ class AuthProvider {
   Future<dynamic> fetchUserWithoutContext(String userId) async {
     try {
       final dio = Dio();
-      final url = '$APIURL/get-user/$userId';
+      final url = '$apiUrl/get-user/$userId';
 
       // Send GET request to fetch user data
       final response = await dio.get(

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:findsafe/.env.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:findsafe/models/devices.dart';
 import 'package:findsafe/service/location.dart';
 import 'package:findsafe/utilities/toast_messages.dart';
@@ -9,11 +9,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 class DeviceApiService {
   late LocationPermission permission;
 
+  String get apiUrl => dotenv.env['API_URL'] ?? '';
+
   Future<List<Device>> fetchDevices(String userId) async {
     final dio = Dio();
     try {
       final response =
-          await dio.get('${Uri.parse(APIURL)}/mobiledevices/$userId');
+          await dio.get('${Uri.parse(apiUrl)}/mobiledevices/$userId');
 
       if (response.statusCode == 200) {
         List jsonResponse = response.data['mobileDevices'];
@@ -55,7 +57,7 @@ class DeviceApiService {
 
     try {
       final response = await dio.post(
-        "$APIURL/register-device/$userId/$devicename/$modelNumer",
+        "$apiUrl/register-device/$userId/$devicename/$modelNumer",
       );
 
       if (response.statusCode == 200) {
