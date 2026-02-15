@@ -1,13 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:findsafe/models/location_model.dart';
+import 'package:findsafe/utilities/logger.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LocationApiService {
+  static final _logger = AppLogger.getLogger('LocationApiService');
+
   String get apiUrl => dotenv.env['API_URL'] ?? '';
 
-// Function for location
   Future<LatLng?> fetchLatestLocation(String deviceId) async {
     final dio = Dio();
     final url = '$apiUrl/mobiledevices/$deviceId/locations';
@@ -19,11 +21,11 @@ class LocationApiService {
         final latestLocation = response.data[0];
         return LatLng(latestLocation['latitude'], latestLocation['longitude']);
       } else {
-        print('No data found for the device: $deviceId');
+        _logger.info('No location data found for device: $deviceId');
         return null;
       }
     } catch (e) {
-      print('Failed to fetch latest location: $e');
+      _logger.warning('Failed to fetch latest location: $e');
       return null;
     }
   }
@@ -34,7 +36,7 @@ class LocationApiService {
     try {
       final response =
           await dio.get('$apiUrl/mobiledevices/$deviceId/locations');
-      print('Resloc: $response');
+
       if (response.statusCode == 200) {
         final data = response.data;
         return data.map<Location>((json) => Location.fromJson(json)).toList();
@@ -58,7 +60,7 @@ class LocationApiService {
     try {
       await dio.post(url, data: data);
     } catch (e) {
-      print('Failed to adding  location: $e');
+      _logger.warning('Failed to register location: $e');
       return null;
     }
     return null;
@@ -74,10 +76,11 @@ class LocationApiService {
     };
 
     try {
-      final response = await dio.post(url, data: data);
-      print('Schedule task executed Response = $response');
+      await dio.post(url, data: data);
+      _logger.info('Location updated for device: $deviceId');
     } catch (e) {
-      print('Error updating location: $e');
+      _logger.warning('Error updating location: $e');
+      rethrow;
     }
   }
 }

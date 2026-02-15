@@ -12,7 +12,8 @@ final _logger = AppLogger.getLogger('BackgroundService');
 final _notificationService = NotificationService();
 final _webSocketService = WebSocketService();
 
-// A more robust background service implementation
+/// In-app foreground background service using Timer.
+/// Complements the Workmanager periodic task for when the app is in the foreground.
 class BackgroundService {
   static Timer? _timer;
   static const Duration _interval = Duration(minutes: 15);
@@ -20,109 +21,78 @@ class BackgroundService {
   static int _failedAttempts = 0;
   static const int _maxFailedAttempts = 3;
   static bool _isRunning = false;
-  static Duration _currentInterval = const Duration(minutes: 15);
+  static Duration _currentInterval = _interval;
 
-  // Start the background service
   static Future<void> start() async {
     _logger.info('Starting background service');
 
     if (_isRunning) {
-      _logger.info('Background service is already running');
+      _logger.info('Background service already running');
       return;
     }
 
-    if (_timer != null) {
-      _timer!.cancel();
-    }
-
+    _timer?.cancel();
     _isRunning = true;
 
     try {
       // Run immediately once
       await updateLocationTask();
 
-      // Then schedule periodic updates
+      // Schedule periodic updates
       _timer = Timer.periodic(_interval, (timer) async {
         await updateLocationTask();
       });
 
       _currentInterval = _interval;
-      _logger.info('Background service started successfully');
-
-      // Show a notification that the service is running
-      await _notificationService.showBasicNotification(
-        id: 999,
-        title: 'FindSafe is active',
-        body: 'Your device is being protected',
-        payload: 'background_service',
-      );
+      _logger.info('Background service started');
     } catch (e, stackTrace) {
       _logger.severe('Error starting background service', e, stackTrace);
       _isRunning = false;
     }
   }
 
-  // Stop the background service
   static void stop() {
     _logger.info('Stopping background service');
-
-    if (_timer != null) {
-      _timer!.cancel();
-      _timer = null;
-    }
-
+    _timer?.cancel();
+    _timer = null;
     _isRunning = false;
-    _logger.info('Background service stopped');
-
-    // Cancel the service notification
-    _notificationService.cancelNotification(999);
   }
 
-  // Check if the service is running
-  static bool isRunning() {
-    return _isRunning;
-  }
+  static bool isRunning() => _isRunning;
 
-  // Handle failed attempts with exponential backoff
+  /// Handle failed attempts with exponential backoff
   static void _handleFailedAttempt() {
     _failedAttempts++;
 
     if (_failedAttempts >= _maxFailedAttempts) {
-      _logger.warning(
-          'Maximum failed attempts reached, reducing update frequency');
+      _logger.warning('Max failed attempts reached, backing off');
 
-      // Restart with a longer interval
-      if (_timer != null) {
-        _timer!.cancel();
+      _timer?.cancel();
 
-        // Use exponential backoff for retry interval
-        final backoffInterval =
-            Duration(minutes: 15 * (_failedAttempts - _maxFailedAttempts + 1));
-        _timer = Timer.periodic(backoffInterval, (timer) async {
-          await updateLocationTask();
-        });
+      // Exponential backoff: 15min * multiplier
+      final backoffMinutes = 15 * (_failedAttempts - _maxFailedAttempts + 2);
+      final backoffInterval = Duration(minutes: backoffMinutes);
 
-        _currentInterval = backoffInterval;
-        _logger.info(
-            'Retry scheduled with interval: ${backoffInterval.inMinutes} minutes');
-      }
+      _timer = Timer.periodic(backoffInterval, (timer) async {
+        await updateLocationTask();
+      });
+
+      _currentInterval = backoffInterval;
+      _logger
+          .info('Retry interval set to ${backoffInterval.inMinutes} minutes');
     }
   }
 
-  // Reset failed attempts counter
+  /// Reset failed attempts and restore normal interval
   static void _resetFailedAttempts() {
     if (_failedAttempts > 0) {
       _failedAttempts = 0;
-      _logger.info('Reset failed attempts counter');
 
-      // If we were in backoff mode, restore normal interval
       if (_currentInterval != _interval) {
-        if (_timer != null) {
-          _timer!.cancel();
-          _timer = Timer.periodic(_interval, (timer) async {
-            await updateLocationTask();
-          });
-        }
+        _timer?.cancel();
+        _timer = Timer.periodic(_interval, (timer) async {
+          await updateLocationTask();
+        });
         _currentInterval = _interval;
         _logger.info('Restored normal update interval');
       }
@@ -134,28 +104,14 @@ Future<void> initializeBackgroundService() async {
   _logger.info('Initializing background service');
 
   try {
-    // Check and request location permissions
-    LocationPermission permission;
-
-    // Check current permission status
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
-      _logger.info('Location permission denied, requesting permission');
       permission = await Geolocator.requestPermission();
     }
 
     if (permission == LocationPermission.deniedForever) {
       _logger.warning('Location permission permanently denied');
-
-      // Show a notification to inform the user
-      await _notificationService.showBasicNotification(
-        id: 998,
-        title: 'Location Access Required',
-        body: 'FindSafe needs location access to protect your device',
-        payload: 'location_permission',
-      );
-
       return;
     }
 
@@ -163,21 +119,10 @@ Future<void> initializeBackgroundService() async {
         permission == LocationPermission.always) {
       _logger.info('Location permission granted: $permission');
 
-      // Initialize notifications first
       await _notificationService.initializeNotifications();
-
-      // Start the background service
       await BackgroundService.start();
     } else {
       _logger.warning('Location permissions not granted: $permission');
-
-      // Show a notification to inform the user
-      await _notificationService.showBasicNotification(
-        id: 998,
-        title: 'Location Access Required',
-        body: 'FindSafe needs location access to protect your device',
-        payload: 'location_permission',
-      );
     }
   } catch (e, stackTrace) {
     _logger.severe('Error initializing background service', e, stackTrace);
@@ -185,25 +130,23 @@ Future<void> initializeBackgroundService() async {
 }
 
 Future<void> connectWebSocket() async {
-  _logger.info('Connecting to WebSocket service');
+  _logger.info('Connecting to WebSocket');
 
   try {
-    // Get device ID
-    final deviceData = await SharedPreferences.getInstance();
-    final deviceId = deviceData.getString('deviceId');
+    final prefs = await SharedPreferences.getInstance();
+    final deviceId = prefs.getString('deviceId');
 
     if (deviceId == null) {
-      _logger.warning('Cannot connect to WebSocket: Device ID is null');
+      _logger.warning('Cannot connect WebSocket: no device ID');
       return;
     }
 
-    // Connect to WebSocket
     await _webSocketService.connect();
-    _logger.info('WebSocket connected successfully');
+    _logger.info('WebSocket connected');
   } catch (e, stackTrace) {
     _logger.severe('Error connecting to WebSocket', e, stackTrace);
 
-    // Schedule a reconnection attempt
+    // Schedule reconnection
     Timer(BackgroundService._reconnectInterval, () {
       connectWebSocket();
     });
@@ -214,15 +157,13 @@ Future<void> updateLocationTask() async {
   _logger.info('Running location update task');
 
   try {
-    // Check network connectivity first
-    bool hasNetwork = await _checkNetworkConnectivity();
+    final hasNetwork = await _checkNetworkConnectivity();
     if (!hasNetwork) {
-      _logger.warning('No network connectivity, skipping location update');
+      _logger.warning('No network, skipping location update');
       BackgroundService._handleFailedAttempt();
       return;
     }
 
-    // Get current position
     final currentPosition = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
@@ -231,50 +172,44 @@ Future<void> updateLocationTask() async {
     );
 
     _logger.info(
-        'Current Location: ${currentPosition.latitude}, ${currentPosition.longitude}');
+        'Location: ${currentPosition.latitude}, ${currentPosition.longitude}');
 
-    // Get device ID
-    final deviceData = await SharedPreferences.getInstance();
-    final deviceId = deviceData.getString('deviceId');
+    final prefs = await SharedPreferences.getInstance();
+    final deviceId = prefs.getString('deviceId');
 
     if (deviceId != null) {
-      // Update location on server
       await _locationService.updateLocation(deviceId, currentPosition);
-      _logger.info('Location updated successfully for device: $deviceId');
+      _logger.info('Location updated for device: $deviceId');
 
-      // Attempt WebSocket reconnection if needed
+      // Store last successful update
+      await prefs.setString(
+        'lastLocationUpdate',
+        DateTime.now().toIso8601String(),
+      );
+
+      // Reconnect WebSocket if needed
       if (!_webSocketService.isConnected()) {
-        _logger.info('WebSocket not connected, attempting to reconnect');
         await connectWebSocket();
       }
 
-      // Reset failed attempts counter on success
       BackgroundService._resetFailedAttempts();
     } else {
-      _logger.warning('Device ID not found in SharedPreferences');
+      _logger.warning('Device ID not found');
       BackgroundService._handleFailedAttempt();
     }
   } catch (e, stackTrace) {
     _logger.severe('Error updating location', e, stackTrace);
     BackgroundService._handleFailedAttempt();
-
-    // Try to recover by scheduling a retry
-    Timer(const Duration(minutes: 1), () {
-      updateLocationTask();
-    });
   }
 }
 
-// Check if the device has network connectivity
 Future<bool> _checkNetworkConnectivity() async {
   try {
     final result = await InternetAddress.lookup('google.com');
     return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-  } on SocketException catch (e) {
-    _logger.warning('No network connectivity: $e');
+  } on SocketException {
     return false;
   } catch (e) {
-    _logger.warning('Error checking network connectivity: $e');
     return false;
   }
 }

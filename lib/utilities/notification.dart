@@ -6,15 +6,23 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   final _logger = AppLogger.getLogger('NotificationService');
 
+  // Notification channel IDs
+  static const String _alertChannelId = 'findsafe_alerts';
+  static const String _alertChannelName = 'FindSafe Alerts';
+  static const String _alertChannelDesc =
+      'Important alerts like geofence breaches and security events';
+
+  static const String _silentChannelId = 'findsafe_background';
+  static const String _silentChannelName = 'Background Updates';
+  static const String _silentChannelDesc = 'Silent background location updates';
+
   Future<void> initializeNotifications() async {
     _logger.info('Initializing notification service');
 
     try {
-      // Android initialization settings
       const initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
 
-      // iOS initialization settings
       const DarwinInitializationSettings initializationSettingsIOS =
           DarwinInitializationSettings(
         requestAlertPermission: true,
@@ -22,63 +30,130 @@ class NotificationService {
         requestSoundPermission: true,
       );
 
-      // Initialize settings for both platforms
       const initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid,
         iOS: initializationSettingsIOS,
       );
 
-      // Initialize the plugin
       await flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
         onDidReceiveNotificationResponse: _onNotificationTapped,
       );
 
-      _logger.info('Notification service initialized successfully');
-
-      // Request permissions
+      _logger.info('Notification service initialized');
       await _requestPermissions();
     } catch (e, stackTrace) {
       _logger.severe('Error initializing notification service', e, stackTrace);
     }
   }
 
-  // Handle notification taps
   void _onNotificationTapped(NotificationResponse response) {
     _logger.info('Notification tapped: ${response.payload}');
-    // Handle notification tap based on payload
-    // This would typically navigate to a specific screen
   }
 
-  // Request notification permissions
   Future<void> _requestPermissions() async {
     try {
-      _logger.info('Requesting notification permissions');
-
-      // Request iOS permissions
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
+          ?.requestPermissions(alert: true, badge: true, sound: true);
 
-      // Request Android permissions
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
           ?.requestNotificationsPermission();
-
-      _logger.info('Notification permissions requested');
     } catch (e, stackTrace) {
       _logger.severe(
           'Error requesting notification permissions', e, stackTrace);
     }
   }
 
-  // Show a notification
+  /// Show a user-facing notification (alerts, geofence, security events).
+  /// Uses high-priority channel with sound.
+  Future<void> showBasicNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    try {
+      const androidDetails = AndroidNotificationDetails(
+        _alertChannelId,
+        _alertChannelName,
+        channelDescription: _alertChannelDesc,
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await flutterLocalNotificationsPlugin.show(
+        id,
+        title,
+        body,
+        details,
+        payload: payload,
+      );
+    } catch (e, stackTrace) {
+      _logger.severe('Error showing notification', e, stackTrace);
+    }
+  }
+
+  /// Show a low-priority silent notification (background status updates).
+  /// No sound, no vibration, minimal interruption.
+  Future<void> showSilentNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    try {
+      const androidDetails = AndroidNotificationDetails(
+        _silentChannelId,
+        _silentChannelName,
+        channelDescription: _silentChannelDesc,
+        importance: Importance.low,
+        priority: Priority.low,
+        showWhen: false,
+        playSound: false,
+        enableVibration: false,
+        ongoing: false,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: false,
+        presentBadge: false,
+        presentSound: false,
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await flutterLocalNotificationsPlugin.show(
+        id,
+        title,
+        body,
+        details,
+        payload: payload,
+      );
+    } catch (e, stackTrace) {
+      _logger.severe('Error showing silent notification', e, stackTrace);
+    }
+  }
+
+  /// Show the raw notification with custom NotificationDetails.
   Future<void> show(
     int id,
     String title,
@@ -86,9 +161,6 @@ class NotificationService {
     NotificationDetails platformChannelSpecifics, {
     required String payload,
   }) async {
-    _logger
-        .info('Showing notification: ID=$id, Title=$title, Payload=$payload');
-
     try {
       await flutterLocalNotificationsPlugin.show(
         id,
@@ -97,81 +169,22 @@ class NotificationService {
         platformChannelSpecifics,
         payload: payload,
       );
-      _logger.info('Notification shown successfully');
     } catch (e, stackTrace) {
       _logger.severe('Error showing notification', e, stackTrace);
     }
   }
 
-  // Show a basic notification
-  Future<void> showBasicNotification({
-    required int id,
-    required String title,
-    required String body,
-    String? payload,
-  }) async {
-    _logger.info('Showing basic notification: ID=$id, Title=$title');
-
-    try {
-      // Android notification details
-      const AndroidNotificationDetails androidPlatformChannelSpecifics =
-          AndroidNotificationDetails(
-        'findsafe_channel',
-        'FindSafe Notifications',
-        channelDescription: 'Notifications from FindSafe app',
-        importance: Importance.max,
-        priority: Priority.high,
-        showWhen: true,
-      );
-
-      // iOS notification details
-      const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-          DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      );
-
-      // Combine platform-specific details
-      const NotificationDetails platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-        iOS: iOSPlatformChannelSpecifics,
-      );
-
-      // Show the notification
-      await flutterLocalNotificationsPlugin.show(
-        id,
-        title,
-        body,
-        platformChannelSpecifics,
-        payload: payload,
-      );
-
-      _logger.info('Basic notification shown successfully');
-    } catch (e, stackTrace) {
-      _logger.severe('Error showing basic notification', e, stackTrace);
-    }
-  }
-
-  // Cancel a specific notification
   Future<void> cancelNotification(int id) async {
-    _logger.info('Cancelling notification with ID: $id');
-
     try {
       await flutterLocalNotificationsPlugin.cancel(id);
-      _logger.info('Notification cancelled successfully');
     } catch (e, stackTrace) {
       _logger.severe('Error cancelling notification', e, stackTrace);
     }
   }
 
-  // Cancel all notifications
   Future<void> cancelAllNotifications() async {
-    _logger.info('Cancelling all notifications');
-
     try {
       await flutterLocalNotificationsPlugin.cancelAll();
-      _logger.info('All notifications cancelled successfully');
     } catch (e, stackTrace) {
       _logger.severe('Error cancelling all notifications', e, stackTrace);
     }
