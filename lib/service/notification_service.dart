@@ -1,11 +1,6 @@
 import 'package:findsafe/constants/custom_bottom_nav.dart';
 import 'package:findsafe/models/geofence_model.dart';
-import 'package:findsafe/screens/geofence.dart';
-import 'package:findsafe/screens/home.dart';
-import 'package:findsafe/screens/location.dart';
-import 'package:findsafe/screens/security.dart';
 import 'package:findsafe/utilities/logger.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:timezone/data/latest.dart' as tz;
